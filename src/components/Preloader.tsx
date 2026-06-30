@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { useTheme } from './ThemeContext';
 
 const slowEase = [0.22, 1, 0.36, 1] as [number, number, number, number];
 
@@ -192,6 +193,7 @@ function generateStatement(seed: number): string {
 const cycleDuration = 2800;
 
 export default function Preloader({ onComplete }: { onComplete: () => void }) {
+  const { isDark } = useTheme();
   const [progress, setProgress] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
   const progressMotion = useMotionValue(0);
@@ -233,7 +235,7 @@ export default function Preloader({ onComplete }: { onComplete: () => void }) {
         <motion.div exit={{ y: '-100%' }} transition={{ duration: 1.2, ease: [0.76, 0, 0.24, 1] as [number, number, number, number] }} className="fixed inset-0 z-[9998] bg-paper flex items-center justify-center">
           <div className="relative z-10 flex flex-col items-center max-w-lg px-6">
             <motion.div initial={{ opacity: 0, filter: 'blur(10px)' }} animate={{ opacity: 1, filter: 'blur(0px)' }} transition={{ duration: 1.2, ease: slowEase }} className="mb-16">
-              <img src="/images/zesh_logo.png" alt="ZESH." className="h-6 md:h-7 w-auto" />
+              <img src={isDark ? "/images/zesh_logo.png" : "/images/zesh_logo_light.png"} alt="ZESH." className="h-6 md:h-7 w-auto" />
             </motion.div>
             <motion.div initial={{ opacity: 0, filter: 'blur(8px)' }} animate={{ opacity: 1, filter: 'blur(0px)' }} transition={{ delay: 0.3, duration: 1, ease: slowEase }} className="flex items-end gap-1 mb-10">
               <span className="font-lato text-7xl md:text-9xl font-700 tabular-nums leading-none text-ink">{progress}</span>

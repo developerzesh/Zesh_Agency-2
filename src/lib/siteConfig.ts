@@ -19,10 +19,10 @@ export const offices = [
 
 // ── Navigation ────────────────────────────────────────────
 export const navLinks = [
-  { label: 'About', path: '/about' },
   { label: 'Solutions', path: '/solutions' },
   { label: 'Industries', path: '/industries' },
   { label: 'Case Studies', path: '/case-studies' },
+  { label: 'About', path: '/about' },
   { label: 'Insights', path: '/insights' },
   { label: 'Careers', path: '/careers' },
   { label: 'Contact', path: '/contact' },
@@ -59,9 +59,10 @@ export const trustLogos = [
 
 // ── Stats ─────────────────────────────────────────────────
 export const stats = [
-  { value: '80%', label: 'Keywords in top 5 in 3 months' },
-  { value: '350%', label: 'Highest ROAS delivered' },
-  { value: '10x', label: 'Revenue increase in 6 months' },
+  { value: '+92%', label: 'Brand Recall Growth' },
+  { value: '+245%', label: 'Search Visibility Growth' },
+  { value: '3.8x', label: 'Inbound Lead Growth' },
+  { value: '$45M+', label: 'Client Revenue Impact' },
 ] as const;
 
 // ── Values ────────────────────────────────────────────────

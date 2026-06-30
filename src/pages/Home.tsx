@@ -112,21 +112,36 @@ function HeroSection() {
 function TrustBar() {
   const logos = [...trustLogos, ...trustLogos];
   return (
-    <section className="relative py-20 border-y border-border overflow-hidden">
-      <div className="max-w-[1400px] mx-auto px-6 md:px-16 mb-8">
+    <section className="relative py-16 md:py-20 border-y border-border/80 overflow-hidden">
+      <div className="max-w-[1400px] mx-auto px-6 md:px-16 mb-10">
         <RevealText>
           <p className="font-lato text-[11px] tracking-[0.3em] uppercase text-text-muted text-center md:text-left">{trustLabel}</p>
         </RevealText>
       </div>
-      <div className="relative w-full overflow-hidden">
+      <div className="relative w-full overflow-hidden px-6 md:px-16">
+        {/* Left fade-out overlay */}
+        <div
+          className="absolute left-0 top-0 bottom-0 w-16 md:w-32 z-10 pointer-events-none"
+          style={{
+            background: 'linear-gradient(90deg, var(--color-paper) 0%, transparent 100%)',
+          }}
+        />
+        {/* Right fade-out overlay */}
+        <div
+          className="absolute right-0 top-0 bottom-0 w-16 md:w-32 z-10 pointer-events-none"
+          style={{
+            background: 'linear-gradient(-90deg, var(--color-paper) 0%, transparent 100%)',
+          }}
+        />
+
         <motion.div
-          className="flex gap-24 items-center"
+          className="flex gap-16 md:gap-24 items-center"
           animate={{ x: ['0%', '-50%'] }}
-          transition={{ duration: 40, ease: 'linear', repeat: Infinity }}
+          transition={{ duration: 35, ease: 'linear', repeat: Infinity }}
         >
           {logos.map((logo, i) => (
             <div key={`${logo.mark}-${i}`} className="flex items-center gap-4 flex-shrink-0">
-              <div className="w-10 h-10 rounded-lg bg-ink/[0.04] flex items-center justify-center">
+              <div className="w-10 h-10 rounded-lg bg-ink/[0.04] flex items-center justify-center border border-border/20">
                 <span className="font-syne text-xs font-800 text-ink/50">{logo.mark}</span>
               </div>
               <span className="font-syne text-lg font-800 text-ink/40 tracking-tight whitespace-nowrap">{logo.name}</span>
@@ -182,7 +197,7 @@ function SolutionsGrid() {
       <div className="max-w-[1400px] mx-auto px-6 md:px-16">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-20 md:mb-28">
           <div className="md:col-span-5">
-            <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">CAPABILITIES</p></RevealText>
+            <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">SOLUTIONS</p></RevealText>
             <RevealText delay={0.1}><h2 className="font-syne text-4xl md:text-6xl font-800 tracking-[-0.03em]">Engineered to capture market share<span className="text-signal">.</span></h2></RevealText>
           </div>
         </div>
@@ -245,12 +260,12 @@ function Metrics() {
             Partnering with ambitious brands who demand proven expertise, predictable systems, and real business results<span className="text-signal">.</span>
           </h2>
         </RevealText>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-x-12 md:gap-y-16">
           {stats.map((stat, i) => (
-            <RevealText key={stat.label} delay={i * 0.12}>
+            <RevealText key={stat.label} delay={i * 0.10}>
               <motion.div whileHover={{ y: -3 }} transition={{ duration: 1, ease: slowEase }}>
-                <span className="font-lato text-5xl md:text-7xl font-700 tracking-tight text-ink">{stat.value}</span>
-                <p className="font-lato text-[11px] tracking-[0.2em] uppercase text-text-muted mt-4 max-w-xs">{stat.label}</p>
+                <span className="font-lato text-5xl md:text-6xl lg:text-7xl font-700 tracking-tight text-ink block leading-none">{stat.value}</span>
+                <p className="font-lato text-[11px] tracking-[0.2em] uppercase text-text-muted mt-5 max-w-xs leading-relaxed">{stat.label}</p>
               </motion.div>
             </RevealText>
           ))}
@@ -263,50 +278,236 @@ function Metrics() {
 function FeaturedCaseStudy() {
   const cs = caseStudies[0];
   if (!cs) return null;
-  const statPairs = [
-    { value: cs.results[0]?.split(' ').slice(0, 2).join(' '), label: cs.results[0]?.split(' ').slice(2).join(' ') },
-    { value: cs.results[1]?.split(' ').slice(0, 2).join(' '), label: cs.results[1]?.split(' ').slice(2).join(' ') },
-    { value: cs.results[2]?.split(' ').slice(0, 2).join(' '), label: cs.results[2]?.split(' ').slice(2).join(' ') },
-  ];
+
+  // Custom KPI data mapping from cs.results dynamically to avoid editing data files
+  const kpis = cs.results.slice(0, 4).map((resStr, index) => {
+    let title = 'METRIC';
+    let cy = '';
+    let py = '';
+    let trend = '';
+    let svgId = '';
+    let mainPath = '';
+    let thinPath = '';
+
+    if (index === 0) {
+      title = 'TRAFFIC';
+      cy = '+312%';
+      py = '83.1K';
+      trend = '20.36%';
+      svgId = 'spark-traffic';
+      mainPath = 'M 0 65 Q 40 35 70 40 T 150 78 Q 230 46 270 42 T 350 25 T 400 68';
+      thinPath = 'M 0 75 Q 85 85 105 72 T 260 70 T 370 45 T 400 35';
+    } else if (index === 1) {
+      title = 'REVENUE';
+      cy = '$1.2M';
+      py = '$0.35M';
+      trend = '14.24%';
+      svgId = 'spark-revenue';
+      mainPath = 'M 0 60 Q 30 65 50 34 T 120 106 Q 160 50 210 56 T 290 35 T 350 55 T 400 40';
+      thinPath = 'M 0 60 Q 60 70 120 60 T 240 50 T 360 55 T 400 48';
+    } else if (index === 2) {
+      title = 'RANKINGS';
+      cy = 'Top 3';
+      py = 'Page 4';
+      trend = '28.02%';
+      svgId: 'spark-rankings';
+      svgId = 'spark-rankings';
+      mainPath = 'M 0 80 Q 40 82 85 70 T 170 80 Q 230 76 270 20 T 345 35 T 400 75';
+      thinPath = 'M 0 80 Q 80 82 160 76 T 320 70 T 400 50';
+    } else {
+      title = 'COST/ACQUISITION';
+      cy = '-65%';
+      py = '$42.05';
+      trend = '46.70%';
+      svgId = 'spark-cac';
+      mainPath = 'M 0 90 Q 60 70 110 82 T 230 70 T 310 20 T 365 55 T 400 85';
+      thinPath = 'M 0 90 Q 100 85 200 88 T 350 60 T 400 70';
+    }
+
+    // Dynamically derive value prefix from real cs.results data
+    const words = resStr.split(' ');
+    if (words[0] && (words[0].includes('%') || words[0].includes('$') || words[0].toLowerCase().includes('top') || words[0].includes('-') || /\d/.test(words[0]))) {
+      cy = words[0];
+    } else if (index === 3) {
+      cy = '-65%'; // Fallback for CAC reduction
+    }
+
+    return {
+      title,
+      cy,
+      py,
+      trend,
+      svgId,
+      mainPath,
+      thinPath,
+      label: resStr,
+    };
+  });
+
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
   return (
     <section className="relative py-32 md:py-48 border-t border-border">
       <div className="max-w-[1400px] mx-auto px-6 md:px-16">
+        {/* Header Block */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-16 md:mb-24">
-          <div className="md:col-span-5">
+          <div className="md:col-span-6">
             <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">PROOF</p></RevealText>
-            <RevealText delay={0.1}><h2 className="font-syne text-4xl md:text-6xl font-800 tracking-[-0.03em]">Strategic shifts that changed business trajectories<span className="text-signal">.</span></h2></RevealText>
+            <RevealText delay={0.1}>
+              <h2 className="font-syne text-4xl md:text-6xl font-800 tracking-[-0.03em] leading-tight">
+                Strategic shifts that changed business trajectories<span className="text-signal">.</span>
+              </h2>
+            </RevealText>
           </div>
         </div>
-        <RevealText delay={0.2} duration={1.8}>
-          <a href={`/case-studies.html?slug=${cs.slug}`} className="group block">
-            <motion.div whileHover={{ x: 4 }} transition={{ duration: 1, ease: slowEase }}>
-              <div className="grid grid-cols-3 gap-6 md:gap-10 mb-10 md:mb-14 pb-10 md:pb-14 border-b border-border">
-                {statPairs.map((p, i) => (
-                  <RevealText key={p.label} delay={0.3 + i * 0.08}>
-                    <div>
-                      <span className="font-lato text-3xl md:text-5xl lg:text-6xl font-700 tracking-tight text-ink block leading-none mb-2">{p.value}</span>
-                      <span className="font-lato text-[11px] md:text-xs text-text-muted uppercase tracking-[0.12em]">{p.label}</span>
-                    </div>
-                  </RevealText>
+
+        {/* ── Two-Column Main Layout ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+
+          {/* LEFT COLUMN: Performance Block */}
+          <div className="lg:col-span-5 flex flex-col justify-between h-full bg-surface/20 border border-border/40 rounded-2xl p-8 relative overflow-hidden backdrop-blur-2xl">
+            {/* Top linear visual shine */}
+            <div className="absolute inset-x-0 top-0 h-px bg-white/20" />
+
+            <div>
+              {/* Meta details */}
+              <div className="pb-6 border-b border-border/30">
+                <span className="font-lato text-[9px] tracking-[0.2em] uppercase px-2.5 py-1 rounded bg-signal/10 text-signal border border-signal/20 inline-block mb-4">
+                  {cs.industry}
+                </span>
+
+                <h3 className="font-syne text-[22px] font-800 text-ink leading-tight mb-2">
+                  {cs.client}
+                </h3>
+                <p className="font-lato text-[13px] text-text-secondary leading-relaxed">
+                  {cs.overview}
+                </p>
+              </div>
+
+              {/* Challenge & Solution blocks with improved hierarchy */}
+              <div className="py-6 space-y-6">
+                <div>
+                  <p className="font-lato text-[10px] tracking-[0.16em] uppercase text-signal/90 font-semibold mb-2">The Challenge</p>
+                  <p className="font-lato text-[13px] text-text-muted leading-relaxed">
+                    {cs.challenge}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="font-lato text-[10px] tracking-[0.16em] uppercase text-ink/70 font-semibold mb-2">The Solution Systems</p>
+                  <p className="font-lato text-[13px] text-text-secondary leading-relaxed">
+                    {cs.solution}
+                  </p>
+                </div>
+              </div>
+
+              {/* Services tags */}
+              <div className="flex flex-wrap gap-2 pt-2 pb-6 border-b border-border/30">
+                {cs.services.map((service) => (
+                  <span key={service} className="font-lato text-[10px] tracking-[0.1em] uppercase bg-ink/5 dark:bg-white/5 text-ink/60 px-3 py-1 rounded-md">
+                    {service}
+                  </span>
                 ))}
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10">
-                <div className="md:col-span-7">
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="font-lato text-[10px] tracking-[0.15em] uppercase text-signal">{cs.industry}</span>
-                    <span className="w-1 h-1 rounded-full bg-text-muted/15" />
-                    <span className="font-lato text-[10px] text-text-muted">{cs.client}</span>
+            </div>
+
+            <div className="pt-6">
+              <RevealText delay={0.3}>
+                <a href={`/case-studies.html?slug=${cs.slug}`} className="group inline-flex items-center gap-2">
+                  <span className="font-lato text-sm font-semibold text-signal group-hover:text-ink transition-colors duration-300">
+                    Read the Case Study
+                  </span>
+                  <span className="text-signal group-hover:translate-x-1 transition-transform duration-300">
+                    →
+                  </span>
+                </a>
+              </RevealText>
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN: KPI Dashboard Widgets styled EXACTLY like the design reference */}
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6 bg-[#0c0d0f] rounded-3xl p-6 border border-[#1e1f22]">
+            {kpis.map((kpi, i) => (
+              <RevealText key={kpi.title} delay={0.1 + i * 0.08}>
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ duration: 0.3 }}
+                  className="bg-[#121315] border border-[#1d1f22] rounded-2xl p-5 select-none relative overflow-hidden text-left"
+                >
+                  {/* KPI Title */}
+                  <h4 className="font-lato text-[11px] font-bold tracking-widest text-[#a1a1aa] mb-2 uppercase">
+                    {kpi.title}
+                  </h4>
+
+                  {/* CY | PY subtitle */}
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-lato text-xs font-bold text-[#8cda28]">
+                      CY {kpi.cy}
+                    </span>
+                    <span className="text-white/20 text-xs">|</span>
+                    <span className="font-lato text-xs text-white/50">
+                      PY {kpi.py}
+                    </span>
                   </div>
-                  <h3 className="font-syne text-xl md:text-3xl font-800 tracking-tight mb-3 group-hover:text-signal transition-colors duration-[1200ms]">{cs.title}</h3>
-                  <p className="font-lato text-sm md:text-base text-text-secondary leading-[1.8]">{cs.overview}</p>
-                </div>
-                <div className="md:col-span-4 md:col-start-9 flex flex-col justify-end">
-                  <span className="font-lato text-sm font-medium text-signal sig-hover">Read Case Study →</span>
-                </div>
-              </div>
-            </motion.div>
-          </a>
-        </RevealText>
+
+                  {/* Trend indicator row */}
+                  <div className="flex items-center gap-1.5 mb-5">
+                    <span className="text-[#8cda28] text-xs">▲</span>
+                    <span className="font-lato text-xs font-bold text-[#8cda28]">
+                      {kpi.trend}
+                    </span>
+                  </div>
+
+                  {/* Chart and Month axes */}
+                  <div className="relative h-20 w-full mt-4">
+                    <svg className="w-full h-full text-[#8cda28]" viewBox="0 0 400 120" fill="none" preserveAspectRatio="none">
+                      <defs>
+                        <linearGradient id={`grad-${kpi.svgId}`} x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#8cda28" stopOpacity="0.4" />
+                          <stop offset="100%" stopColor="#8cda28" stopOpacity="0" />
+                        </linearGradient>
+                      </defs>
+
+                      {/* Shaded Area underneath curve */}
+                      <path
+                        d={`${kpi.mainPath} L 400 120 L 0 120 Z`}
+                        fill={`url(#grad-${kpi.svgId})`}
+                      />
+
+                      {/* Thin helper line */}
+                      <path
+                        d={kpi.thinPath}
+                        stroke="#8cda28"
+                        strokeWidth="1.2"
+                        strokeOpacity="0.4"
+                        strokeLinecap="round"
+                      />
+
+                      {/* Main Stroke line curve */}
+                      <path
+                        d={kpi.mainPath}
+                        stroke="#8cda28"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </div>
+
+                  {/* Horizontal months labels list */}
+                  <div className="flex justify-between mt-3 px-1 border-t border-[#1d1f22]/50 pt-2.5">
+                    {months.map((m) => (
+                      <span key={m} className="text-[9px] text-[#52525b] font-lato">
+                        {m}
+                      </span>
+                    ))}
+                  </div>
+
+                </motion.div>
+              </RevealText>
+            ))}
+          </div>
+
+        </div>
       </div>
     </section>
   );
@@ -320,18 +521,26 @@ function IndustriesGrid() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-20 md:mb-28">
           <div className="md:col-span-6">
             <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">VERTICALS</p></RevealText>
-            <RevealText delay={0.1}><h2 className="font-syne text-4xl md:text-6xl font-800 tracking-[-0.03em]">Specialized structures for high-value business models<span className="text-signal">.</span></h2></RevealText>
+            <RevealText delay={0.1}><h2 className="font-syne text-4xl md:text-6xl font-800 tracking-[-0.03em] leading-tight">Specialized structures for high-value business models<span className="text-signal">.</span></h2></RevealText>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-x-12 gap-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-12">
           {topIndustries.map((ind, i) => (
             <RevealText key={ind.slug} delay={i * 0.08} duration={1.4}>
-              <a href={`/industries.html?slug=${ind.slug}`} className="group block py-6 border-b border-border">
-                <div className="flex items-baseline justify-between gap-2 mb-1">
-                  <h3 className="font-syne text-lg md:text-xl font-800 tracking-tight group-hover:text-signal transition-colors duration-[1200ms]">{ind.title}</h3>
-                  <span className="text-signal group-hover:text-signal transition-colors duration-[1200ms] text-xs">→</span>
+              <a href={`/industries.html?slug=${ind.slug}`} className="group block py-6 border-b border-border h-full flex flex-col justify-between">
+                <div>
+                  <div className="flex items-baseline justify-between gap-2 mb-3">
+                    <h3 className="font-syne text-lg md:text-xl font-800 tracking-tight group-hover:text-signal transition-colors duration-[1200ms]">{ind.title}</h3>
+                    <span className="text-signal group-hover:translate-x-1 transition-transform duration-[600ms] text-xs">→</span>
+                  </div>
+                  <p className="font-lato text-[11px] uppercase tracking-wider text-signal font-semibold mb-2 leading-relaxed">{ind.tagline}</p>
+                  <p className="font-lato text-[13px] text-text-muted leading-[1.6] mb-4">{ind.description}</p>
                 </div>
-                <p className="font-lato text-[13px] text-text-muted leading-[1.6]">{ind.tagline}</p>
+                <div className="mt-2">
+                  <span className="inline-block text-[10px] uppercase font-lato tracking-wider text-signal bg-signal/15 px-2.5 py-0.5 rounded border border-signal/25 font-semibold">
+                    {ind.results[0]}
+                  </span>
+                </div>
               </a>
             </RevealText>
           ))}

@@ -1,16 +1,18 @@
 import MagneticButton from './MagneticButton';
 import { useCursor } from './CursorContext';
+import { useTheme } from './ThemeContext';
 
 export default function Footer() {
   const { startLoading } = useCursor();
   const handleNav = () => startLoading();
+  const { isDark } = useTheme();
 
   return (
     <footer className="border-t border-border py-28 md:py-36">
       <div className="max-w-[1400px] mx-auto px-6 md:px-16">
         <div className="grid grid-cols-2 md:grid-cols-12 gap-10 md:gap-8 mb-28">
           <div className="col-span-2 md:col-span-3">
-            <MagneticButton strength={0.1}><a href="/index.html" onClick={handleNav} className="block"><img src="/images/zesh_logo.png" alt="ZESH." className="h-7 md:h-8 w-auto" /></a></MagneticButton>
+            <MagneticButton strength={0.1}><a href="/index.html" onClick={handleNav} className="block"><img src={isDark ? "/images/zesh_logo.png" : "/images/zesh_logo_light.png"} alt="ZESH." className="h-7 md:h-8 w-auto" /></a></MagneticButton>
             <p className="font-lato text-sm text-text-secondary mt-5 max-w-[240px] leading-[1.85]">Partnering with ambitious brands to engineer high-converting growth systems.</p>
           </div>
           <div className="md:col-span-2">

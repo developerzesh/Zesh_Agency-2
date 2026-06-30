@@ -16,6 +16,10 @@
   --color-text-primary: #0A0A0A;
   --color-text-secondary: #3A3A36;
   --color-text-muted: #5A5A55;
+
+  /* Glassmorphism – light mode uses white so panel lifts above cream page bg */
+  --glass-bg: 255, 255, 255;
+  --glass-border: rgba(0, 0, 0, 0.08);
 }
 
 .dark {
@@ -27,9 +31,15 @@
   --color-text-primary: #EDECE7;
   --color-text-secondary: #B5B5B0;
   --color-text-muted: #8A8A85;
+
+  /* Glassmorphism – dark mode */
+  --glass-bg: 18, 18, 18;
+  --glass-border: rgba(255, 255, 255, 0.10);
 }
 
-* { cursor: none !important; }
+* {
+  cursor: none !important;
+}
 
 body {
   background-color: var(--color-paper);
@@ -39,7 +49,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-              color 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    color 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 ::selection {
@@ -47,30 +57,65 @@ body {
   color: var(--color-paper);
 }
 
-::-webkit-scrollbar { width: 2px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--color-ink); border-radius: 1px; }
+::-webkit-scrollbar {
+  width: 2px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-ink);
+  border-radius: 1px;
+}
 
 @keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
 }
-.animate-marquee { animation: marquee 60s linear infinite; }
 
-.three-canvas canvas { outline: none !important; }
+.animate-marquee {
+  animation: marquee 60s linear infinite;
+}
 
-.sig-hover { position: relative; }
+.three-canvas canvas {
+  outline: none !important;
+}
+
+.sig-hover {
+  position: relative;
+}
+
 .sig-hover::after {
   content: '';
   position: absolute;
-  bottom: -2px; left: 0;
-  width: 0; height: 1.5px;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1.5px;
   background: #F4A536;
   transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.sig-hover:hover::after { width: 100%; }
 
-a, button, span, p, h1, h2, h3, h4, div {
+.sig-hover:hover::after {
+  width: 100%;
+}
+
+a,
+button,
+span,
+p,
+h1,
+h2,
+h3,
+h4,
+div {
   transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -78,4 +123,7 @@ a, button, span, p, h1, h2, h3, h4, div {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
