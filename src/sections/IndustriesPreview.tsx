@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import RevealText from '../components/RevealText';
-import { industries } from '../data/industries';
+import { industries } from '../lib/data';
 
 export default function IndustriesPreview() {
   return (

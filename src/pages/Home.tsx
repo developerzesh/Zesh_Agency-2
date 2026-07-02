@@ -6,6 +6,7 @@ import RevealText from '../components/RevealText';
 import CinematicImage from '../components/CinematicImage';
 import PageTransition from '../components/PageTransition';
 import { solutions, industries, caseStudies, stats, heroContent, trustLabel, trustLogos, reasons } from '../lib/data';
+import Testimonials from '../components/Testimonials';
 
 const slowEase = [0.22, 1, 0.36, 1] as [number, number, number, number];
 
@@ -35,22 +36,22 @@ function HeroSection() {
   const line2 = headlineWords.slice(mid).join(' ');
 
   return (
-    <section id="hero" ref={containerRef} className="relative min-h-screen md:h-screen flex items-center overflow-hidden">
+    <section id="hero" ref={containerRef} className="relative min-h-screen flex items-center overflow-hidden">
       <ParticleField />
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div style={{ x: parallaxX, y: parallaxY }} className="absolute top-1/3 -right-20 w-[600px] h-[600px] rounded-full bg-signal/[0.015] blur-[250px]" />
         <motion.div style={{ x: parallaxX, y: parallaxY }} className="absolute bottom-0 left-1/4 w-[400px] h-[400px] rounded-full bg-ink/[0.008] blur-[180px]" />
       </div>
-      <motion.div style={{ y, opacity }} className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-16 w-full pt-28 md:pt-32">
+      <motion.div style={{ y, opacity }} className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-16 w-full pt-40 md:pt-40">
         <motion.p
           initial={{ opacity: 0, filter: 'blur(20px)' }}
           animate={{ opacity: 1, filter: 'blur(0px)' }}
           transition={{ duration: 1.4, delay: 0.3, ease: slowEase }}
-          className="font-lato text-[11px] tracking-[0.3em] uppercase text-text-muted mb-14 md:mb-20"
+          className="font-lato text-[11px] tracking-[0.3em] uppercase text-text-muted mb-6 md:mb-10"
         >
           {heroContent.badge}
         </motion.p>
-        <h1 className="font-syne text-[clamp(2.2rem,5.5vw,5.5rem)] font-800 leading-[0.9] tracking-[-0.03em] mb-12 max-w-5xl">
+        <h1 className="font-syne text-[clamp(2.2rem,5.5vw,5.5rem)] font-800 leading-[0.9] tracking-[-0.03em] mb-10 md:mb-14 max-w-5xl">
           <motion.span
             initial={{ opacity: 0, filter: 'blur(40px)', y: 50 }}
             animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
@@ -112,7 +113,7 @@ function HeroSection() {
 function TrustBar() {
   const logos = [...trustLogos, ...trustLogos];
   return (
-    <section className="relative py-16 md:py-20 border-y border-border/80 overflow-hidden">
+    <section className="relative py-10 md:py-14 border-y border-border/80 overflow-hidden">
       <div className="max-w-[1400px] mx-auto px-6 md:px-16 mb-10">
         <RevealText>
           <p className="font-lato text-[11px] tracking-[0.3em] uppercase text-text-muted text-center md:text-left">{trustLabel}</p>
@@ -157,7 +158,7 @@ function WhyChooseUs() {
   return (
     <section className="relative py-32 md:py-48 border-t border-border">
       <div className="max-w-[1400px] mx-auto px-6 md:px-16">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-20 md:mb-28">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-32 md:mb-28">
           <div className="md:col-span-5">
             <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">THE DIFFERENCE</p></RevealText>
             <RevealText delay={0.1}><h2 className="font-syne text-4xl md:text-6xl font-800 tracking-[-0.03em]">Built for operators who expect clear growth systems<span className="text-signal">.</span></h2></RevealText>
@@ -195,7 +196,7 @@ function SolutionsGrid() {
   return (
     <section className="relative py-32 md:py-48 border-t border-border">
       <div className="max-w-[1400px] mx-auto px-6 md:px-16">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-20 md:mb-28">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-32 md:mb-28">
           <div className="md:col-span-5">
             <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">SOLUTIONS</p></RevealText>
             <RevealText delay={0.1}><h2 className="font-syne text-4xl md:text-6xl font-800 tracking-[-0.03em]">Engineered to capture market share<span className="text-signal">.</span></h2></RevealText>
@@ -256,7 +257,7 @@ function Metrics() {
       <div className="max-w-[1400px] mx-auto px-6 md:px-16">
         <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">THE METRICS</p></RevealText>
         <RevealText delay={0.1}>
-          <h2 className="font-syne text-3xl md:text-5xl font-800 tracking-[-0.03em] max-w-3xl mb-20 md:mb-28">
+          <h2 className="font-syne text-3xl md:text-5xl font-800 tracking-[-0.03em] max-w-3xl mb-32 md:mb-28">
             Partnering with ambitious brands who demand proven expertise, predictable systems, and real business results<span className="text-signal">.</span>
           </h2>
         </RevealText>
@@ -350,7 +351,7 @@ function FeaturedCaseStudy() {
     <section className="relative py-32 md:py-48 border-t border-border">
       <div className="max-w-[1400px] mx-auto px-6 md:px-16">
         {/* Header Block */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-16 md:mb-24">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-28 md:mb-24">
           <div className="md:col-span-6">
             <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">PROOF</p></RevealText>
             <RevealText delay={0.1}>
@@ -508,6 +509,12 @@ function FeaturedCaseStudy() {
           </div>
 
         </div>
+
+        <RevealText delay={0.4}>
+          <div className="mt-16 md:mt-20 flex justify-start">
+            <a href="/case-studies.html" className="font-lato text-sm font-medium text-signal sig-hover">Read More Case Studies →</a>
+          </div>
+        </RevealText>
       </div>
     </section>
   );
@@ -518,7 +525,7 @@ function IndustriesGrid() {
   return (
     <section className="relative py-32 md:py-48 border-t border-border">
       <div className="max-w-[1400px] mx-auto px-6 md:px-16">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-20 md:mb-28">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-32 md:mb-28">
           <div className="md:col-span-6">
             <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">VERTICALS</p></RevealText>
             <RevealText delay={0.1}><h2 className="font-syne text-4xl md:text-6xl font-800 tracking-[-0.03em] leading-tight">Specialized structures for high-value business models<span className="text-signal">.</span></h2></RevealText>
@@ -547,7 +554,7 @@ function IndustriesGrid() {
         </div>
         <RevealText delay={0.5}>
           <div className="mt-20">
-            <a href="/industries.html" className="font-lato text-sm font-medium text-signal sig-hover">Explore All 8 Sectors We Serve →</a>
+            <a href="/industries.html" className="font-lato text-sm font-medium text-signal sig-hover">Explore All 9 Sectors We Serve →</a>
           </div>
         </RevealText>
       </div>
@@ -567,7 +574,7 @@ function CTA() {
       <div className="max-w-[1400px] mx-auto px-6 md:px-16 relative z-10">
         <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-8">ACQUISITION</p></RevealText>
         <RevealText delay={0.1}>
-          <h2 className="font-syne text-4xl md:text-6xl lg:text-[5rem] font-800 tracking-[-0.04em] leading-[0.88] mb-12">
+          <h2 className="font-syne text-4xl md:text-6xl lg:text-[5rem] font-800 tracking-[-0.04em] leading-[0.88] mb-32">
             Making marketing work for businesses<span className="text-signal">.</span>
           </h2>
         </RevealText>
@@ -595,6 +602,7 @@ export default function Home() {
       <Metrics />
       <FeaturedCaseStudy />
       <IndustriesGrid />
+      <Testimonials />
       <CTA />
     </PageTransition>
   );

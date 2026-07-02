@@ -50,19 +50,19 @@ export default function Hero() {
         <motion.div style={{ x: parallaxX, y: parallaxY }} className="absolute top-1/3 -left-40 w-[500px] h-[500px] rounded-full bg-ink/[0.012] blur-[200px]" />
       </div>
 
-      <motion.div style={{ y, opacity }} className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-16 w-full pt-28 md:pt-32">
+      <motion.div style={{ y, opacity }} className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-16 w-full pt-40 md:pt-40">
         {/* Location tag */}
         <motion.p
           initial={{ opacity: 0, filter: 'blur(20px)' }}
           animate={{ opacity: 1, filter: 'blur(0px)' }}
           transition={{ duration: 1.4, delay: 0.3, ease: slowEase }}
-          className="font-lato text-[11px] tracking-[0.3em] uppercase text-text-muted mb-14 md:mb-20"
+          className="font-lato text-[11px] tracking-[0.3em] uppercase text-text-muted mb-14 md:mb-32"
         >
           Digital Marketing Agency<span className="text-signal mx-3">—</span>New York · London · Tokyo · Dubai
         </motion.p>
 
         {/* Headline */}
-        <h1 className="font-syne text-[clamp(3rem,8vw,8.5rem)] font-800 leading-[0.92] tracking-[-0.03em] mb-12 md:mb-16">
+        <h1 className="font-syne text-[clamp(3rem,8vw,8.5rem)] font-800 leading-[0.92] tracking-[-0.03em] mb-32 md:mb-28">
           {words.map((word, i) => (
             <BlurWord key={word} word={word} delay={0.5 + i * 0.12} />
           ))}

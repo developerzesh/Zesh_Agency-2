@@ -2,6 +2,7 @@ import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import RevealText from '../components/RevealText';
 import MagneticButton from '../components/MagneticButton';
 import PageTransition from '../components/PageTransition';
+import Testimonials from '../components/Testimonials';
 
 const offices = [
   { city: 'New York', type: 'HQ', email: 'ny@zesh.agency' },
@@ -17,7 +18,7 @@ export default function Contact() {
 
   return (
     <PageTransition>
-      <section className="relative pt-32 pb-24 overflow-hidden" onMouseMove={(e) => { mouseX.set(e.clientX - window.innerWidth / 2); mouseY.set(e.clientY - window.innerHeight / 2); }}>
+      <section className="relative pt-40 pb-36 overflow-hidden" onMouseMove={(e) => { mouseX.set(e.clientX - window.innerWidth / 2); mouseY.set(e.clientY - window.innerHeight / 2); }}>
         <motion.div style={{ x: parallaxX, y: parallaxY }} className="absolute top-1/4 -right-20 w-[500px] h-[500px] rounded-full bg-signal/[0.015] blur-[200px] pointer-events-none" />
         <motion.div style={{ x: parallaxX, y: parallaxY }} className="absolute bottom-0 left-1/4 w-[400px] h-[400px] rounded-full bg-ink/[0.006] blur-[180px] pointer-events-none" />
         <div className="max-w-[1400px] mx-auto px-6 md:px-16 relative z-10">
@@ -33,10 +34,34 @@ export default function Contact() {
             <div className="md:col-span-7">
               <RevealText duration={1.4}><p className="font-lato text-[11px] tracking-[0.2em] uppercase text-text-muted mb-8">Share your challenge</p></RevealText>
               <form className="space-y-8" onSubmit={(e) => e.preventDefault()}>
-                <RevealText delay={0.1} duration={1.2}><div><label className="font-lato text-[11px] tracking-[0.15em] uppercase text-text-muted block mb-3">Full Name</label><input type="text" className="w-full bg-transparent border-b border-border py-3 font-lato text-base text-ink outline-none focus:border-ink transition-colors duration-700 placeholder:text-text-muted" placeholder="Alexander Wright" /></div></RevealText>
-                <RevealText delay={0.15} duration={1.2}><div><label className="font-lato text-[11px] tracking-[0.15em] uppercase text-text-muted block mb-3">Work Email</label><input type="email" className="w-full bg-transparent border-b border-border py-3 font-lato text-base text-ink outline-none focus:border-ink transition-colors duration-700 placeholder:text-text-muted" placeholder="alexander@company.com" /><p className="font-lato text-[10px] text-text-muted mt-2 italic">The inbox you actually check.</p></div></RevealText>
-                <RevealText delay={0.2} duration={1.2}><div><label className="font-lato text-[11px] tracking-[0.15em] uppercase text-text-muted block mb-3">Company Website URL</label><input type="url" className="w-full bg-transparent border-b border-border py-3 font-lato text-base text-ink outline-none focus:border-ink transition-colors duration-700 placeholder:text-text-muted" placeholder="https://company.com" /></div></RevealText>
-                <RevealText delay={0.25} duration={1.2}><div><label className="font-lato text-[11px] tracking-[0.15em] uppercase text-text-muted block mb-3">What is not working right now?</label><textarea rows={5} className="w-full bg-transparent border-b border-border py-3 font-lato text-base text-ink outline-none focus:border-ink transition-colors duration-700 placeholder:text-text-muted resize-none" placeholder="Tell us about your product, organic search visibility gaps, or current pipeline challenges..." /></div></RevealText>
+                <RevealText delay={0.1} duration={1.2}>
+                  <div>
+                    <label className="font-lato text-[11px] tracking-[0.15em] uppercase text-text-muted block mb-3">Full Name</label>
+                    <input type="text" className="w-full bg-transparent border-b border-border py-3 font-lato text-base text-ink outline-none focus:border-ink transition-colors duration-700 placeholder:text-text-muted" placeholder="Alexander Wright" />
+                    <p className="font-lato text-[10px] text-text-muted mt-2 italic">The name of the growth operator behind the brand.</p>
+                  </div>
+                </RevealText>
+                <RevealText delay={0.15} duration={1.2}>
+                  <div>
+                    <label className="font-lato text-[11px] tracking-[0.15em] uppercase text-text-muted block mb-3">Work Email</label>
+                    <input type="email" className="w-full bg-transparent border-b border-border py-3 font-lato text-base text-ink outline-none focus:border-ink transition-colors duration-700 placeholder:text-text-muted" placeholder="alexander@company.com" />
+                    <p className="font-lato text-[10px] text-text-muted mt-2 italic">The inbox you actually check.</p>
+                  </div>
+                </RevealText>
+                <RevealText delay={0.2} duration={1.2}>
+                  <div>
+                    <label className="font-lato text-[11px] tracking-[0.15em] uppercase text-text-muted block mb-3">Company Website URL</label>
+                    <input type="url" className="w-full bg-transparent border-b border-border py-3 font-lato text-base text-ink outline-none focus:border-ink transition-colors duration-700 placeholder:text-text-muted" placeholder="https://company.com" />
+                    <p className="font-lato text-[10px] text-text-muted mt-2 italic">To analyze your search visibility gaps prior to the call.</p>
+                  </div>
+                </RevealText>
+                <RevealText delay={0.25} duration={1.2}>
+                  <div>
+                    <label className="font-lato text-[11px] tracking-[0.15em] uppercase text-text-muted block mb-3">What is not working right now?</label>
+                    <textarea rows={5} className="w-full bg-transparent border-b border-border py-3 font-lato text-base text-ink outline-none focus:border-ink transition-colors duration-700 placeholder:text-text-muted resize-none" placeholder="Tell us about your product, organic search visibility gaps, or current pipeline challenges..." />
+                    <p className="font-lato text-[10px] text-text-muted mt-2 italic">Be as thorough as you like — our founders read every submission.</p>
+                  </div>
+                </RevealText>
                 <RevealText delay={0.3} duration={1.2}><MagneticButton strength={0.4}><button type="submit" className="font-lato text-sm font-medium text-signal sig-hover mt-4">Request Discovery Call →</button></MagneticButton></RevealText>
                 <RevealText delay={0.35} duration={1.2}><p className="font-lato text-[10px] text-text-muted mt-4">We respond within 12 business hours. Your submission is safe, secure, and confidential.</p></RevealText>
               </form>
@@ -68,6 +93,7 @@ export default function Contact() {
           </div>
         </div>
       </section>
+      <Testimonials />
     </PageTransition>
   );
 }

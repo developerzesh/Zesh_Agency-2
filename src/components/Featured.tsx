@@ -10,7 +10,7 @@ export default function Featured() {
           <p className="font-lato text-[10px] tracking-[0.35em] uppercase text-signal mb-5">Featured</p>
         </RevealText>
         <RevealText delay={0.1} duration={1.4}>
-          <h2 className="font-syne text-5xl md:text-7xl font-800 tracking-[-0.03em] mb-16 md:mb-24">Latest<span className="text-signal">.</span></h2>
+          <h2 className="font-syne text-5xl md:text-7xl font-800 tracking-[-0.03em] mb-28 md:mb-24">Latest<span className="text-signal">.</span></h2>
         </RevealText>
 
         {/* Apple-style large feature card */}

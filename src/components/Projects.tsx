@@ -31,7 +31,7 @@ export default function Projects() {
 
   return (
     <section id="work" className="relative py-32 md:py-48 border-t border-border">
-      <div className="max-w-[1400px] mx-auto px-6 md:px-16 mb-16 md:mb-20">
+      <div className="max-w-[1400px] mx-auto px-6 md:px-16 mb-28 md:mb-32">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-8">
           <div>
             <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">Selected Work</p></RevealText>

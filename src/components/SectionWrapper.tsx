@@ -22,7 +22,7 @@ export default function SectionWrapper({ label, title, subtitle, children, cente
             whileInView={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
             viewport={{ once: true, margin: '-60px' }}
             transition={{ duration: 1.4, delay: 0.15, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
-            className={`font-lato text-base md:text-lg text-text-secondary leading-[1.85] max-w-2xl mb-20 md:mb-28 ${centered ? 'text-center mx-auto' : ''}`}
+            className={`font-lato text-base md:text-lg text-text-secondary leading-[1.85] max-w-2xl mb-32 md:mb-28 ${centered ? 'text-center mx-auto' : ''}`}
           >
             {subtitle}
           </motion.p>

@@ -74,9 +74,9 @@ export default function Studio() {
 
   return (
     <PageTransition>
-      <section ref={heroRef} className="relative min-h-[80vh] flex items-end overflow-hidden pb-20">
+      <section ref={heroRef} className="relative min-h-[80vh] flex items-end overflow-hidden pb-32">
         <WireframeGlobe />
-        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-16 pt-32 w-full">
+        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-16 pt-40 w-full">
           <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">Our Studio</p></RevealText>
           <RevealText delay={0.1}><h1 className="font-syne text-4xl md:text-6xl lg:text-[5rem] font-800 tracking-[-0.04em] leading-[0.85]">The Studio<span className="text-signal">.</span></h1></RevealText>
           <RevealText delay={0.2}><p className="font-lato text-base md:text-lg text-text-secondary max-w-lg mt-8 leading-[1.85]">A collective of visionaries, engineers, and storytellers united by an obsession with exceptional design.</p></RevealText>
@@ -85,7 +85,7 @@ export default function Studio() {
 
       <section className="py-32 md:py-48 border-t border-border">
         <div className="max-w-[1400px] mx-auto px-6 md:px-16">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-20 md:mb-28">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-32 md:mb-28">
             <div className="md:col-span-4"><RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">The People</p></RevealText><RevealText delay={0.1}><h2 className="font-syne text-4xl md:text-6xl font-800 tracking-[-0.03em]">Team<span className="text-signal">.</span></h2></RevealText></div>
             <div className="md:col-span-5 md:col-start-8 flex items-end"><RevealText delay={0.2}><p className="font-lato text-base text-text-secondary leading-[1.85]">40+ creatives across four continents. Diverse perspectives, one shared standard of excellence.</p></RevealText></div>
           </div>

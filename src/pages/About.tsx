@@ -5,6 +5,7 @@ import MagneticButton from '../components/MagneticButton';
 import ParticleField from '../components/ParticleField';
 import PageTransition from '../components/PageTransition';
 import { values, aboutStats } from '../lib/data';
+import Testimonials from '../components/Testimonials';
 
 export default function About() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -14,9 +15,9 @@ export default function About() {
 
   return (
     <PageTransition>
-      <section ref={heroRef} className="relative min-h-[80vh] flex items-end overflow-hidden pb-24">
+      <section ref={heroRef} className="relative min-h-[80vh] flex items-end overflow-hidden pb-36">
         <ParticleField />
-        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-16 pt-32 w-full">
+        <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-16 pt-40 w-full">
           <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">OUR ETHOS</p></RevealText>
           <RevealText duration={2}><h1 className="font-syne text-4xl md:text-6xl lg:text-[5rem] font-800 tracking-[-0.04em] leading-[0.85]">Built to focus purely on outcomes<span className="text-signal">.</span></h1></RevealText>
           <RevealText delay={0.3} duration={1.6}><p className="font-lato text-lg md:text-xl text-text-secondary max-w-lg mt-10 leading-[1.85]">We built this consultancy to focus purely on outcomes. Our mission is to align strategic growth planning with high-converting execution, replacing speculation with performance.</p></RevealText>
@@ -99,6 +100,7 @@ export default function About() {
           </div>
         </div>
       </section>
+      <Testimonials />
     </PageTransition>
   );
 }

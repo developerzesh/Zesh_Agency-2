@@ -308,7 +308,7 @@ export default function Navigation() {
             transition={{ duration: 0.5 }}
             className="fixed inset-0 z-40 bg-paper"
           >
-            <div className="h-full flex flex-col pt-28 px-8 md:px-16 pb-8 overflow-y-auto">
+            <div className="h-full flex flex-col pt-40 px-8 md:px-16 pb-8 overflow-y-auto">
               <div className="flex-1">
                 {navItems.map((item, i) => (
                   <motion.div

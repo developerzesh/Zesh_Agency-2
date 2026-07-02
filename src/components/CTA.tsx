@@ -16,7 +16,7 @@ export default function CTA() {
       <div className="max-w-[1400px] mx-auto px-6 md:px-16 relative z-10">
         <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-8">Start a Project</p></RevealText>
         <RevealText delay={0.1}>
-          <h2 className="font-syne text-6xl md:text-8xl lg:text-[10rem] font-800 tracking-[-0.04em] leading-[0.88] mb-12">
+          <h2 className="font-syne text-6xl md:text-8xl lg:text-[10rem] font-800 tracking-[-0.04em] leading-[0.88] mb-32">
             Let's create<br />something great<span className="text-signal">.</span>
           </h2>
         </RevealText>

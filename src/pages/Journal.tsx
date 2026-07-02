@@ -24,7 +24,7 @@ export default function Journal() {
 
   return (
     <PageTransition>
-      <section ref={heroRef} className="relative min-h-[70vh] flex items-end overflow-hidden pb-20">
+      <section ref={heroRef} className="relative min-h-[70vh] flex items-end overflow-hidden pb-32">
         <div className="absolute inset-0 overflow-hidden pointer-events-none"><div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full bg-ink/[0.008] blur-[180px]" /></div>
         <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-16 pt-40 w-full">
           <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">Insights & Ideas</p></RevealText>
@@ -39,7 +39,7 @@ export default function Journal() {
         </div>
       </section>
 
-      <section className="py-16 md:py-24">
+      <section className="py-28 md:py-36">
         <div className="max-w-[1400px] mx-auto px-6 md:px-16">
           {filteredArticles.map((article, i) => (
             <RevealText key={article.id} delay={i * 0.06}>

@@ -19,7 +19,7 @@ export default function Process() {
   return (
     <section ref={containerRef} className="relative py-32 md:py-48 border-t border-border">
       <div className="max-w-[1400px] mx-auto px-6 md:px-16">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-20 md:mb-28">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-32 md:mb-28">
           <div className="md:col-span-4">
             <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">How We Work</p></RevealText>
             <RevealText delay={0.1}><h2 className="font-syne text-5xl md:text-7xl font-800 tracking-[-0.03em]">Process<span className="text-signal">.</span></h2></RevealText>
@@ -35,7 +35,7 @@ export default function Process() {
           <div>
             {processSteps.map((step, i) => (
               <RevealText key={step.number} delay={i * 0.08} duration={1.2}>
-                <motion.div whileHover={{ x: 6 }} transition={{ duration: 1, ease: slowEase }} className="group flex gap-8 md:gap-14 py-14 md:py-18 border-b border-border">
+                <motion.div whileHover={{ x: 6 }} transition={{ duration: 1, ease: slowEase }} className="group flex gap-8 md:gap-14 py-36 md:py-18 border-b border-border">
                   <div className="flex-shrink-0 pt-1">
                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-border bg-paper flex items-center justify-center group-hover:border-signal transition-colors duration-[1200ms]">
                       <span className="font-lato text-[10px] font-medium text-signal">{step.number}</span>

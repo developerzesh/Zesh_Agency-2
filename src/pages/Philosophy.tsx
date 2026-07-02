@@ -32,7 +32,7 @@ export default function Philosophy() {
 
   return (
     <PageTransition>
-      <section ref={heroRef} className="relative min-h-[90vh] flex items-end overflow-hidden pb-20">
+      <section ref={heroRef} className="relative min-h-[90vh] flex items-end overflow-hidden pb-32">
         <MorphingShape />
         <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-16 pt-40 w-full">
           <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">Our Beliefs</p></RevealText>
@@ -46,11 +46,11 @@ export default function Philosophy() {
       <section ref={manifestoRef} className="py-32 md:py-48 border-t border-border">
         <div className="max-w-[1400px] mx-auto px-6 md:px-16">
           <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">D.E.S.I.G.N.</p></RevealText>
-          <RevealText delay={0.1}><h2 className="font-syne text-4xl md:text-6xl font-800 tracking-[-0.03em] mb-20 md:mb-28">Manifesto<span className="text-signal">.</span></h2></RevealText>
+          <RevealText delay={0.1}><h2 className="font-syne text-4xl md:text-6xl font-800 tracking-[-0.03em] mb-32 md:mb-28">Manifesto<span className="text-signal">.</span></h2></RevealText>
           <div>
             {manifesto.map((item, i) => (
               <RevealText key={item.letter} delay={i * 0.08}>
-                <motion.div whileHover={{ x: 10 }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }} className="group flex items-start gap-8 md:gap-20 py-14 md:py-18 border-b border-border">
+                <motion.div whileHover={{ x: 10 }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }} className="group flex items-start gap-8 md:gap-20 py-36 md:py-18 border-b border-border">
                   <span className="font-syne text-6xl md:text-8xl font-800 text-ink/[0.035] group-hover:text-signal transition-colors duration-1000 leading-none flex-shrink-0 w-16 md:w-24">{item.letter}</span>
                   <div className="flex-1 pt-2"><h3 className="font-syne text-xl md:text-3xl font-800 tracking-tight mb-3 group-hover:text-signal transition-colors duration-700">{item.title}</h3><p className="font-lato text-sm md:text-base text-text-secondary leading-[1.85] max-w-lg">{item.text}</p></div>
                 </motion.div>
