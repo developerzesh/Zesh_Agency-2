@@ -43,14 +43,17 @@ function HeroSection() {
         <motion.div style={{ x: parallaxX, y: parallaxY }} className="absolute bottom-0 left-1/4 w-[400px] h-[400px] rounded-full bg-ink/[0.008] blur-[180px]" />
       </div>
       <motion.div style={{ y, opacity }} className="relative z-10 max-w-[1400px] mx-auto px-6 md:px-16 w-full pt-40 md:pt-40">
-        <motion.p
+        <motion.div
           initial={{ opacity: 0, filter: 'blur(20px)' }}
           animate={{ opacity: 1, filter: 'blur(0px)' }}
           transition={{ duration: 1.4, delay: 0.3, ease: slowEase }}
-          className="font-lato text-[11px] tracking-[0.3em] uppercase text-text-muted mb-6 md:mb-10"
+          className="flex flex-wrap items-center gap-4 font-lato text-[11px] tracking-[0.3em] uppercase text-text-muted mb-6 md:mb-10"
         >
-          {heroContent.badge}
-        </motion.p>
+          <span>Trusted by brands backed by</span>
+          <img src="/meta_logo.png" alt="Meta" className="h-3 md:h-8 w-auto object-contain opacity-60 grayscale dark:brightness-0 dark:invert hover:opacity-100 hover:grayscale-0 hover:dark:brightness-100 hover:dark:invert-0 transition-all duration-500 md:-mx-4 -mx-2" />
+          <span>and</span>
+          <img src="/shark_tank_logo.png" alt="Shark Tank" className="h-5 md:h-8 w-auto object-contain opacity-60 grayscale dark:brightness-0 dark:invert hover:opacity-100 hover:grayscale-0 hover:dark:brightness-100 hover:dark:invert-0 transition-all duration-500" />
+        </motion.div>
         <h1 className="font-syne text-[clamp(2.2rem,5.5vw,5.5rem)] font-800 leading-[0.9] tracking-[-0.03em] mb-10 md:mb-14 max-w-5xl">
           <motion.span
             initial={{ opacity: 0, filter: 'blur(40px)', y: 50 }}
@@ -141,11 +144,8 @@ function TrustBar() {
           transition={{ duration: 35, ease: 'linear', repeat: Infinity }}
         >
           {logos.map((logo, i) => (
-            <div key={`${logo.mark}-${i}`} className="flex items-center gap-4 flex-shrink-0">
-              <div className="w-10 h-10 rounded-lg bg-ink/[0.04] flex items-center justify-center border border-border/20">
-                <span className="font-syne text-xs font-800 text-ink/50">{logo.mark}</span>
-              </div>
-              <span className="font-syne text-lg font-800 text-ink/40 tracking-tight whitespace-nowrap">{logo.name}</span>
+            <div key={`${logo.alt}-${i}`} className="flex items-center flex-shrink-0">
+              <img src={logo.src} alt={logo.alt} className="h-8 md:h-12 w-auto object-contain opacity-50 grayscale dark:brightness-0 dark:invert hover:opacity-100 hover:grayscale-0 hover:dark:brightness-100 hover:dark:invert-0 transition-all duration-500" />
             </div>
           ))}
         </motion.div>

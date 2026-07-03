@@ -47,14 +47,19 @@ export const trustClients = [
 ] as const;
 
 export const trustLogos = [
-  { name: 'SaaS Platforms', mark: 'SP' },
-  { name: 'Enterprise Tech', mark: 'ET' },
-  { name: 'Luxury Real Estate', mark: 'LR' },
-  { name: 'Medical Clinics', mark: 'MC' },
-  { name: 'Fortune 500', mark: 'F5' },
-  { name: 'Healthcare Networks', mark: 'HN' },
-  { name: 'Architecture Firms', mark: 'AF' },
-  { name: 'Professional Services', mark: 'PS' },
+  { src: '/client-logos/Goldmine.png', alt: 'Goldmine' },
+  { src: '/client-logos/Heita.png', alt: 'Heita' },
+  { src: '/client-logos/Makobrew.png', alt: 'Makobrew' },
+  { src: '/client-logos/Meetstream.png', alt: 'Meetstream' },
+  { src: '/client-logos/Pawparazzi.png', alt: 'Pawparazzi' },
+  { src: '/client-logos/Pincha.png', alt: 'Pincha' },
+  { src: '/client-logos/bajaj.png', alt: 'Bajaj' },
+  { src: '/client-logos/nyx.png', alt: 'NYX' },
+  { src: '/client-logos/saarthee.png', alt: 'Saarthee' },
+  { src: '/client-logos/sdb.png', alt: 'SDB' },
+  { src: '/client-logos/shri_ram_school.png', alt: 'Shri Ram School' },
+  { src: '/client-logos/tata.png', alt: 'Tata' },
+  { src: '/client-logos/xarwin.avif', alt: 'Xarwin' },
 ] as const;
 
 // ── Stats ─────────────────────────────────────────────────
@@ -90,10 +95,10 @@ export const reasons = [
 ] as const;
 
 export const aboutStats = [
-  { value: '150+', label: 'Projects Delivered' },
-  { value: '40+', label: 'Clients Worldwide' },
-  { value: '12', label: 'Industry Awards' },
-  { value: '98%', label: 'Client Retention' },
+  { value: '80+', label: 'Brand Clients' },
+  { value: '15+', label: 'Industries' },
+  { value: '12+', label: 'Countries' },
+  { value: '8+', label: 'Years' },
 ] as const;
 
 // ── Solutions ─────────────────────────────────────────────
