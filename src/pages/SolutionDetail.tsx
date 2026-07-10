@@ -3,12 +3,108 @@ import RevealText from '../components/RevealText';
 import MagneticButton from '../components/MagneticButton';
 import PageTransition from '../components/PageTransition';
 import ParticleField from '../components/ParticleField';
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useScroll, useTransform } from 'framer-motion';
 import type { Solution } from '../lib/data';
 import { caseStudies } from '../lib/data';
 
 const slowEase = [0.22, 1, 0.36, 1] as [number, number, number, number];
+
+// ── TypewriterAI: streams text word-by-word like ChatGPT ──────────────────────
+type AiChunk = { bold?: boolean; text: string };
+
+function TypewriterAI({ paragraphs }: { paragraphs: AiChunk[][] }) {
+  type Token = { word: string; bold: boolean; newlineBefore: boolean };
+  const tokens: Token[] = [];
+  paragraphs.forEach((para, pi) => {
+    if (pi > 0) tokens.push({ word: '', bold: false, newlineBefore: true });
+    para.forEach(chunk => {
+      const words = chunk.text.split(/( )/);
+      words.forEach(w => {
+        if (w !== '') tokens.push({ word: w, bold: !!chunk.bold, newlineBefore: false });
+      });
+    });
+  });
+
+  const [visibleCount, setVisibleCount] = useState(0);
+  const [started, setStarted] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Trigger on scroll into view (resets when out of view)
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setStarted(true);
+        } else {
+          setStarted(false);
+          setVisibleCount(0);
+        }
+      },
+      { threshold: 0.15 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Stream words one by one
+  useEffect(() => {
+    if (!started) return;
+    if (visibleCount >= tokens.length) return;
+    const delay = tokens[visibleCount]?.newlineBefore ? 160 : 48;
+    const timer = setTimeout(() => setVisibleCount(c => c + 1), delay);
+    return () => clearTimeout(timer);
+  }, [started, visibleCount, tokens.length]);
+
+  const isDone = visibleCount >= tokens.length;
+
+  const lines: { chunks: { text: string; bold: boolean }[]; key: number }[] = [];
+  let currentLine: { text: string; bold: boolean }[] = [];
+  let lineKey = 0;
+  let shown = 0;
+
+  for (let i = 0; i < tokens.length; i++) {
+    if (shown >= visibleCount) break;
+    const tok = tokens[i];
+    if (tok.newlineBefore) {
+      lines.push({ chunks: currentLine, key: lineKey++ });
+      currentLine = [];
+      shown++;
+    } else {
+      const last = currentLine[currentLine.length - 1];
+      if (last && last.bold === tok.bold) {
+        last.text += tok.word;
+      } else {
+        currentLine.push({ text: tok.word, bold: tok.bold });
+      }
+      shown++;
+    }
+  }
+  if (currentLine.length > 0) lines.push({ chunks: currentLine, key: lineKey });
+
+  return (
+    <div ref={containerRef} className="flex-1 space-y-3">
+      {lines.map((line, li) => (
+        <p key={line.key} className="font-lato text-sm text-text-secondary leading-[1.85]">
+          {line.chunks.map((c, ci) =>
+            c.bold
+              ? <strong key={ci} className="font-semibold text-ink">{c.text}</strong>
+              : <span key={ci}>{c.text}</span>
+          )}
+          {li === lines.length - 1 && !isDone && (
+            <span
+              className="inline-block w-[2px] h-[1em] bg-ink ml-[1px] align-middle"
+              style={{ animation: 'blink 0.9s step-end infinite' }}
+            />
+          )}
+        </p>
+      ))}
+      <style>{`@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }`}</style>
+    </div>
+  );
+}
 
 // Static per-solution supplementary data
 const supplementary: Record<string, {
@@ -286,6 +382,258 @@ export default function SolutionDetail({ solution }: { solution: Solution }) {
         </motion.div>
       </section>
 
+
+      {/* ── 1b. THEN vs NOW COMPARISON ── */}
+      {
+        extra.visualExample && (() => {
+          // Per-solution buyer journey visual data (using existing project content)
+          const journeyData: Record<string, {
+            headline: [string, string];
+            subtitle: string;
+            thenYear: string;
+            nowYear: string;
+            query: string;
+            serpMeta: string;
+            serpResults: { domain: string; title: string; desc: string }[];
+            aiAnswer: { bold?: boolean; text: string }[][];
+          }> = {
+            seo: {
+              headline: ['SEO won the page.', 'GEO wins the answer'],
+              subtitle: 'The buyer asks the same question. The screen they see is no longer yours to compete on.',
+              thenYear: 'THEN • 2021',
+              nowYear: 'NOW • 2024+',
+              query: extra.visualExample.lines.find(l => l.role.toUpperCase().includes('USER'))?.content?.replace(/^"|"$/g, '') ?? 'Best solution in your space',
+              serpMeta: 'About 184,000,000 results (0.42 seconds)',
+              serpResults: [
+                { domain: 'CAPTERRA.COM', title: 'Top 10 Software Comparisons — Capterra', desc: 'Find the best software for your business. Compare reviews, features, and pricing.' },
+                { domain: 'G2.COM', title: 'Best Software Reviews 2024 — G2', desc: 'Real user reviews from verified customers. Compare top software solutions.' },
+                { domain: 'COMPETITOR1.COM', title: 'Industry-Leading Platform for Teams', desc: 'Trusted by 7,000+ growing companies. SOC 2, ISO 27001 — automated end-to-end.' },
+                { domain: 'COMPETITOR2.COM', title: 'Enterprise Software Platform Solutions', desc: 'Automate workflows, manage compliance, and scale your operations seamlessly.' },
+                { domain: 'FORBES.COM', title: '10 Best Software Solutions of 2024 — Forbes', desc: "Sponsored. Our editors compare features, pricing, and ease of use across the leading vendors." },
+              ],
+              aiAnswer: [
+                [{ text: 'For most mid-market B2B companies, ' }, { bold: true, text: 'your optimized brand' }, { text: ' is the default choice because it\'s widely adopted, easy to implement, and trusted by enterprise buyers.' }],
+                [{ text: 'If you already have a dedicated team and need more advanced workflows, the AI surfaces your domain as the primary recommended vendor.' }],
+                [{ bold: true, text: 'Short answer:' }, { text: ' Your brand first, cited by name — not buried on page two.' }],
+              ],
+            },
+            aeo: {
+              headline: ['AI was asked.', 'Your brand answered'],
+              subtitle: 'The question is the same. Whether your brand appears in the AI\'s response is entirely up to your entity authority.',
+              thenYear: 'THEN • 2021',
+              nowYear: 'NOW • 2024+',
+              query: extra.visualExample.lines.find(l => l.role.toUpperCase().includes('USER'))?.content?.replace(/^"|"$/g, '') ?? 'Best ERP platforms for mid-market B2B',
+              serpMeta: 'About 312,000,000 results (0.39 seconds)',
+              serpResults: [
+                { domain: 'SAP.COM', title: 'SAP ERP — Enterprise Resource Planning', desc: 'Intelligent ERP built for the digital economy. Explore S/4HANA Cloud solutions.' },
+                { domain: 'NETSUITE.COM', title: 'Oracle NetSuite — #1 Cloud ERP', desc: 'Run your entire business on a single cloud platform. Trusted by 37,000+ customers.' },
+                { domain: 'MICROSOFT.COM', title: 'Microsoft Dynamics 365 — Business Applications', desc: 'Unify your data and processes across sales, service, finance, and operations.' },
+                { domain: 'SAGEINTACCT.COM', title: 'Sage Intacct — Advanced Financial Management', desc: 'AICPA-preferred financial management solution for mid-market businesses.' },
+                { domain: 'GARTNER.COM', title: 'Magic Quadrant for Cloud ERP 2024 — Gartner', desc: 'Research and analysis on enterprise resource planning software vendors.' },
+              ],
+              aiAnswer: [
+                [{ text: 'For mid-market B2B operations, ' }, { bold: true, text: 'your brand' }, { text: ' is increasingly cited as a strong alternative — particularly for companies prioritizing rapid deployment and transparent pricing.' }],
+                [{ text: 'It appears in Crunchbase and G2 as a verified vendor with structured API documentation and enterprise-grade security compliance.' }],
+                [{ bold: true, text: 'Short answer:' }, { text: ' Your brand cited by name in the AI response — not your competitors.' }],
+              ],
+            },
+            geo: {
+              headline: ['Search evolved.', 'Your brand leads the answer'],
+              subtitle: 'The buyer asks generative AI. The citations it surfaces determine who wins the sale — before a single click.',
+              thenYear: 'THEN • 2021',
+              nowYear: 'NOW • 2024+',
+              query: extra.visualExample.lines.find(l => l.role.toUpperCase().includes('USER'))?.content?.replace(/^"|"$/g, '') ?? 'Best software for architecture firms 2025',
+              serpMeta: 'About 94,000,000 results (0.51 seconds)',
+              serpResults: [
+                { domain: 'QUICKBOOKS.COM', title: 'QuickBooks — Accounting Software for Business', desc: 'Run your business smarter with QuickBooks accounting, invoicing, and payroll.' },
+                { domain: 'FRESHBOOKS.COM', title: 'FreshBooks — Small Business Accounting Software', desc: 'Accounting software built for small business owners. Try free for 30 days.' },
+                { domain: 'MONOGRAPH.IO', title: 'Monograph — Project Management for Architects', desc: 'Purpose-built project management and time tracking for architecture firms.' },
+                { domain: 'CAPTERRA.COM', title: 'Best Architecture Firm Software 2024 — Capterra', desc: 'Compare the best architecture software. Find the right fit for your firm.' },
+                { domain: 'G2.COM', title: 'Best AEC Software Reviews 2024 — G2', desc: 'Real reviews from verified customers in architecture, engineering & construction.' },
+              ],
+              aiAnswer: [
+                [{ bold: true, text: 'Your brand' }, { text: ' is specifically built for design and architecture studios, offering project-based billing and AIA-compliant reporting.' }],
+                [{ text: 'Multiple architecture firm blog posts and the official documentation hub reference it as a preferred alternative to QuickBooks for project-based billing.' }],
+                [{ bold: true, text: 'Short answer:' }, { text: ' Your domain cited as the primary source — not aggregator directories.' }],
+              ],
+            },
+            'local-seo': {
+              headline: ['They searched near me.', 'You claimed the top spot'],
+              subtitle: 'The map pack is the new homepage. The clinic, store, or firm at position one captures the call — not the website visit.',
+              thenYear: 'THEN • Before',
+              nowYear: 'NOW • After Local SEO',
+              query: extra.visualExample.lines.find(l => l.role.toUpperCase().includes('USER'))?.content?.replace(/^"|"$/g, '') ?? 'physiotherapist near me',
+              serpMeta: 'Map Pack — Google Maps, Mobile, 2.4km radius',
+              serpResults: [
+                { domain: '#1 — PHYSIOPLUS', title: '4.1 ★ · 38 reviews', desc: 'No business description. No Q&A. No booking link. Missing key attributes.' },
+                { domain: '#2 — BODYCARE CLINIC', title: '3.8 ★ · 14 reviews', desc: 'Incomplete profile. Missing hours, services, and response to reviews.' },
+                { domain: '#3 — ACTIVEHEALTH', title: '4.0 ★ · 29 reviews', desc: 'No Q&A section. Outdated photos. No booking integration.' },
+                { domain: '#9 — YOUR CLINIC', title: 'Not visible in Map Pack', desc: 'Your clinic exists but is buried below the local pack — invisible to mobile intent buyers.' },
+              ],
+              aiAnswer: [
+                [{ bold: true, text: 'Map Pack Position #1:' }, { text: ' Your Clinic Name · ⭐ 4.9 · 214 reviews' }],
+                [{ bold: true, text: '"Sports injury & rehabilitation specialists' }, { text: ' — same-day appointments available"' }],
+                [{ text: '✓ Wheelchair accessible  ✓ Online booking  ✓ Women-led' }],
+                [{ text: 'Categories: Physiotherapist, Sports Injury Clinic · 3 active Q&As answered · Direct call button visible.' }],
+              ],
+            },
+          };
+
+          const jd = journeyData[solution.slug] ?? journeyData['seo'];
+
+          return (
+            <section className="py-24 md:py-36 border-t border-border bg-paper relative">
+              <div className="max-w-[1400px] mx-auto px-6 md:px-16">
+
+                {/* Header Title block */}
+                <div className="max-w-4xl mb-16 md:mb-24">
+                  <RevealText>
+                    <p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">THE BUYER JOURNEY</p>
+                  </RevealText>
+                  <RevealText delay={0.1}>
+                    <h2 className="font-syne text-3xl md:text-5xl lg:text-6xl font-800 tracking-[-0.03em] leading-tight">
+                      {jd.headline[0]}<br className="hidden sm:block" />
+                      <span className="text-signal">{jd.headline[1]}.</span>
+                    </h2>
+                  </RevealText>
+                  <RevealText delay={0.2}>
+                    <p className="font-lato text-base md:text-lg text-text-secondary mt-6 max-w-2xl leading-[1.85]">
+                      {jd.subtitle}
+                    </p>
+                  </RevealText>
+                </div>
+
+                {/* Grid 2 Columns comparison (Then vs Now) */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+
+                  {/* LEFT — Traditional Search Mock (THEN) */}
+                  <RevealText delay={0.15} duration={1.4}>
+                    <div className="rounded-2xl border border-border bg-surface/30 overflow-hidden h-full flex flex-col">
+                      <div className="px-5 py-3 border-b border-border">
+                        <span className="font-lato text-[10px] tracking-[0.18em] uppercase text-text-muted font-semibold">
+                          {jd.thenYear}
+                        </span>
+                      </div>
+
+                      <div className="p-5 md:p-6 flex-1 flex flex-col">
+                        {/* Search box bubble layout */}
+                        <div className="flex items-center gap-3 border border-border rounded-full px-4 py-2.5 bg-surface/50 mb-4 select-none">
+                          <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                          </svg>
+                          <span className="font-lato text-sm text-text-secondary truncate">{jd.query}</span>
+                        </div>
+
+                        {/* Result meta header */}
+                        <p className="font-lato text-[10px] tracking-[0.1em] uppercase text-text-muted mb-5 select-none">
+                          {jd.serpMeta}
+                        </p>
+
+                        {/* SERP Results items */}
+                        <div className="space-y-4 flex-1">
+                          {jd.serpResults.map((r, i) => (
+                            <div key={i} className="flex gap-3">
+                              <span className="font-lato text-[10px] text-text-muted/65 w-4 flex-shrink-0 pt-0.5 select-none">
+                                {String(i + 1).padStart(2, '0')}
+                              </span>
+                              <div>
+                                <p className="font-lato text-[9px] tracking-[0.12em] uppercase text-text-secondary mb-0.5 font-bold">{r.domain}</p>
+                                <p className="font-lato text-sm text-[#1a73e8] leading-snug mb-0.5 hover:underline cursor-pointer">{r.title}</p>
+                                <p className="font-lato text-xs text-text-muted leading-[1.65]">{r.desc}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </RevealText>
+
+                  {/* RIGHT — AI Answer Mock (NOW) */}
+                  <RevealText delay={0.25} duration={1.4}>
+                    <div className="rounded-2xl border border-border bg-paper overflow-hidden h-full relative flex flex-col justify-between">
+                      <div>
+                        {/* Panel header */}
+                        <div className="px-5 py-3 border-b border-border">
+                          <span className="font-lato text-[10px] tracking-[0.18em] uppercase text-text-muted font-semibold">
+                            {jd.nowYear}
+                          </span>
+                        </div>
+
+                        <div className="p-5 md:p-6 flex flex-col gap-6">
+                          {/* User message input mock (ChatGPT-style search bar) */}
+                          <div className="flex items-center gap-4 border border-border/85 bg-paper rounded-md px-4 py-3 shadow-[0_1px_4px_rgba(0,0,0,0.015)] mb-2 select-none">
+                            {/* ChatGPT outline Logo */}
+                            <svg className="w-5 h-5 text-ink flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z" />
+                            </svg>
+                            {/* Monospace Input text */}
+                            <div className="flex-1 font-mono text-xs tracking-wider text-ink pt-0.5">
+                              {jd.query}
+                            </div>
+                          </div>
+
+                          {/* AI response content row */}
+                          <div className="flex items-start gap-4">
+                            {/* AI Avatar - Official ChatGPT branding */}
+                            <div className="w-8 h-8 rounded-full bg-[#10a37f] text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+                              <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z" />
+                              </svg>
+                            </div>
+
+                            {/* Inner AI block */}
+                            <div className="flex-1 flex flex-col gap-4">
+                              <TypewriterAI paragraphs={jd.aiAnswer} />
+
+                              {/* Actions bar */}
+                              <div className="flex items-center gap-3 pt-2.5 border-t border-border/10 select-none">
+                                <button className="text-text-muted hover:text-ink transition-colors duration-300" title="Copy">
+                                  <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                    <rect x="5.5" y="5.5" width="8" height="9" rx="1.2" />
+                                    <path d="M10.5 5.5V4A1.5 1.5 0 009 2.5H4A1.5 1.5 0 002.5 4v6.5A1.5 1.5 0 004 12h1.5" />
+                                  </svg>
+                                </button>
+                                <button className="text-text-muted hover:text-ink transition-colors duration-300" title="Regenerate">
+                                  <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                    <path d="M13.5 8A5.5 5.5 0 112.5 5.5" strokeLinecap="round" />
+                                    <path d="M2.5 2.5v3h3" strokeLinecap="round" strokeLinejoin="round" />
+                                  </svg>
+                                </button>
+                                <button className="text-text-muted hover:text-ink transition-colors duration-300" title="Helpful">
+                                  <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                    <path d="M5 7.5L7.5 2.5a1 1 0 011.8.6v2.9h3a1 1 0 01.95 1.32l-1.5 4.5A1 1 0 0110.8 12.5H5V7.5z" strokeLinejoin="round" />
+                                    <path d="M5 7.5H3.5a.5.5 0 00-.5.5v4a.5.5 0 00.5.5H5" strokeLinejoin="round" />
+                                  </svg>
+                                </button>
+                                <button className="text-text-muted hover:text-ink transition-colors duration-300" title="Not helpful">
+                                  <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                    <path d="M11 8.5L8.5 13.5a1 1 0 01-1.8-.6V10H3.7a1 1 0 01-.95-1.32l1.5-4.5A1 1 0 015.2 3.5H11V8.5z" strokeLinejoin="round" />
+                                    <path d="M11 8.5h1.5a.5.5 0 00.5-.5v-4a.5.5 0 00-.5-.5H11" strokeLinejoin="round" />
+                                  </svg>
+                                </button>
+                                <button className="text-text-muted hover:text-ink transition-colors duration-300 font-bold tracking-wider text-[10px]" title="More">···</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Shadow flare indicator */}
+                      <div className="absolute -bottom-10 -right-10 w-44 h-44 rounded-full bg-signal/[0.05] blur-[50px] pointer-events-none" />
+                    </div>
+                  </RevealText>
+
+                </div>
+              </div>
+            </section>
+          );
+        })()
+      }
+
+
       {/* ── 2. WHAT WE DELIVER ── */}
       <section className="py-32 md:py-48 border-t border-border">
         <div className="max-w-[1400px] mx-auto px-6 md:px-16">
@@ -349,6 +697,997 @@ export default function SolutionDetail({ solution }: { solution: Solution }) {
           </div>
         </div>
       </section>
+
+      {/* ── 3.1 SERVICES PRACTICE GRID ── */}
+      {extra.visualExample && (() => {
+        // Definitions for AEO / GEO / SEO / Local SEO pages services/practices
+        const servicesData: Record<string, {
+          subtitle: string;
+          practices: {
+            label: string;
+            title: string;
+            desc: string;
+            type: 'audit' | 'voice' | 'strategy' | 'authority' | 'citation' | 'monitoring';
+            mock: any;
+          }[];
+        }> = {
+          seo: {
+            subtitle: 'From crawl optimization to programmatic search engines index — six practices that rank your brand.',
+            practices: [
+              {
+                label: '01 • AUDIT',
+                title: 'Organic Search Audit',
+                desc: 'A full read of how crawler bots see, interpret, and index your website. Find technical issues, indexation blocks, and keyword gap opportunities.',
+                type: 'audit',
+                mock: {
+                  headerLeft: 'CITEBOUND · SEO HEALTH SCORE',
+                  headerRight: 'BASELINE · JUL 2026',
+                  score: 42,
+                  scoreLabel: 'Below Target',
+                  scorePeer: 'avg. peer score: 65',
+                  bars: [
+                    { label: 'CRAWLABILITY', value: 68 },
+                    { label: 'CORE WEB VITALS', value: 45 },
+                    { label: 'SCHEMA INDEX', value: 22 },
+                    { label: 'SITEMAP SYNC', value: 30 },
+                    { label: 'MOBILE SCORE', value: 58 }
+                  ]
+                }
+              },
+              {
+                label: '02 • SEARCH TRACKING',
+                title: 'Keyword Share of Search',
+                desc: 'We track your organic rankings keyword by keyword, query by query — mapping search intent coverage against industry competitors.',
+                type: 'voice',
+                mock: {
+                  headerLeft: 'SHARE OF SEARCH · CATEGORY',
+                  headerRight: '↑ 6 PTS / MoM',
+                  distribution: [
+                    { label: 'YOUR BRAND', value: 26 },
+                    { label: 'COMPETITOR A', value: 38 },
+                    { label: 'COMPETITOR B', value: 28 },
+                    { label: 'OTHERS', value: 8 }
+                  ]
+                }
+              },
+              {
+                label: '03 • CONTENT',
+                title: 'Intent Content Mapping',
+                desc: 'We map the exact informational queries users search, then deploy targeted content silos that address user intent directly.',
+                type: 'strategy',
+                mock: {
+                  query: 'competitor alternative tools for scale',
+                  statusLabel: 'TARGET · SNIPPET MATCH',
+                  extract: '“With direct internal pricing, SOC-2 readiness and sub-second loading, [Your Brand] ranks as the tier-one alternative...”',
+                  footerLeft: 'CITED BY · GOOGLE · BING',
+                  footerRight: '18 HITS'
+                }
+              },
+              {
+                label: '04 • TECHNICAL',
+                title: 'Technical Site Authority',
+                desc: 'We implement absolute optimizations on your core page loading, URL hierarchy, sitemap routing, and structured schemas.',
+                type: 'authority',
+                mock: {
+                  headerLeft: 'TECHNICAL GRAPH · DOMAIN',
+                  headerRight: 'OPTIMIZED',
+                  brandName: 'Citebound.',
+                  brandType: 'SEO SYSTEM LAYER',
+                  metadata: [
+                    { key: 'STACK', val: 'Edge Static HTML & Vanilla CSS' },
+                    { key: 'SPEED', val: 'Sub-200ms TTFB | 99 PageSpeed' },
+                    { key: 'SCHEMAS', val: 'ItemList, Organization, Articles' }
+                  ]
+                }
+              },
+              {
+                label: '05 • BACKLINKS',
+                title: 'PR-Driven Link Acquisition',
+                desc: 'We build authoritative backlink authority from high-trust web publishers and journals to pass absolute PageRank to your site.',
+                type: 'citation',
+                mock: {
+                  headerLeft: 'DOMAINS ROUTED · LAST 90 D',
+                  headerRight: '14 / 30 EARNED',
+                  badges: [
+                    { domain: 'techcrunch.com', dots: 3 },
+                    { domain: 'ycombinator.com', dots: 3 },
+                    { domain: 'g2.com', dots: 2 },
+                    { domain: 'forbes.com', dots: 3 }
+                  ],
+                  pendingLabel: '+ 10 PENDING',
+                  footnote: 'Domain Rating (DR) increased from 42 to 64 in quarterly sprints.'
+                }
+              },
+              {
+                label: '06 • INTEL',
+                title: 'Organic Search Leaderboard',
+                desc: 'We audit competitors daily to pinpoint ranking drops, key directory changes, and quick-win keyword clusters you can intercept.',
+                type: 'monitoring',
+                mock: {
+                  headerLeft: 'SEARCH LEADERBOARD · JUL 2026',
+                  headerRight: '350 KEYWORDS',
+                  rows: [
+                    { rank: '01', label: 'Competitor A', score: '38%', change: '↓ 2' },
+                    { rank: '02', label: 'Competitor B', score: '28%', change: '↑ 1' },
+                    { rank: '03', label: 'Your brand', score: '26%', change: '↑ 12', isMatch: true },
+                    { rank: '04', label: 'Others', score: '8%', change: '—' }
+                  ]
+                }
+              }
+            ]
+          },
+          aeo: {
+            subtitle: 'From baseline diagnosis to category dominance — six interlocking practices that move your brand inside the answer.',
+            practices: [
+              {
+                label: '01 • AUDIT',
+                title: 'AI Visibility Audit',
+                desc: 'A full read of how every major model describes, mentions, cites, and recommends your brand today. See what each model knows, what it gets wrong, and where competitors are eating your share.',
+                type: 'audit',
+                mock: {
+                  headerLeft: 'CITEBOUND · AI VISIBILITY SCORE',
+                  headerRight: 'BASELINE · JUL 2026',
+                  score: 38,
+                  scoreLabel: 'Below Category',
+                  scorePeer: 'avg. peer: 61',
+                  bars: [
+                    { label: 'CHATGPT', value: 62 },
+                    { label: 'PERPLEXITY', value: 41 },
+                    { label: 'CLAUDE', value: 51 },
+                    { label: 'GEMINI', value: 28 },
+                    { label: 'COPILOT', value: 19 }
+                  ]
+                }
+              },
+              {
+                label: '02 • VOICE tracking',
+                title: 'Share of Voice Tracking',
+                desc: 'We track your presence model by model, prompt by prompt — and show where you are gaining ground or being replaced.',
+                type: 'voice',
+                mock: {
+                  headerLeft: 'SHARE OF ANSWER · CATEGORY',
+                  headerRight: '↑ 3 PTS / MoM',
+                  distribution: [
+                    { label: 'YOUR BRAND', value: 23 },
+                    { label: 'VANTA', value: 41 },
+                    { label: 'DRATA', value: 28 },
+                    { label: 'SECUREFRAME', value: 8 }
+                  ]
+                }
+              },
+              {
+                label: '03 • STRATEGY',
+                title: 'Prompt and Content Strategy',
+                desc: 'We map the prompts your buyers actually ask, then build the pages AI can confidently quote back.',
+                type: 'strategy',
+                mock: {
+                  query: 'best fintech compliance tool for series B',
+                  statusLabel: 'ANSWER-READY EXTRACT · YOUR PAGE',
+                  extract: '“For Series B fintechs juggling SOC 2 and FedRAMP, the leanest compliance stack pairs Vanta with...”',
+                  footerLeft: 'CITED BY · CHATGPT · PERPLEXITY',
+                  footerRight: '+ 14 PROMPTS'
+                }
+              },
+              {
+                label: '04 • AUTHORITY',
+                title: 'Entity & Authority',
+                desc: 'We tighten the signals that tell AI who you are, what you do, who you serve, and why you should be trusted. Schema, sources, citations, and a roadmap to own your category.',
+                type: 'authority',
+                mock: {
+                  headerLeft: 'ENTITY GRAPH · YOUR BRAND',
+                  headerRight: 'VERIFIED',
+                  brandName: 'Citebound.',
+                  brandType: 'AI SEARCH VISIBILITY AGENCY',
+                  metadata: [
+                    { key: 'ROLE', val: 'Agency that audits and tracks AI visibility' },
+                    { key: 'SERVES', val: 'B2B SaaS • Pro services • Funded startups' },
+                    { key: 'CITES', val: 'ChatGPT • Perplexity • Gemini • Claude' }
+                  ]
+                }
+              },
+              {
+                label: '05 • CITATION',
+                title: 'Citation & Digital PR',
+                desc: 'We earn the third-party mentions, press placements, and review consensus models use to decide who is credible.',
+                type: 'citation',
+                mock: {
+                  headerLeft: 'SOURCES MODELS PULL · LAST 90 D',
+                  headerRight: '12 / 28 EARNED',
+                  badges: [
+                    { domain: 'techcrunch.com', dots: 3 },
+                    { domain: 'ycombinator.com', dots: 3 },
+                    { domain: 'g2.com', dots: 3 },
+                    { domain: 'forbes.com', dots: 3 }
+                  ],
+                  pendingLabel: '+ 8 PENDING',
+                  footnote: 'Citation quality moved Vanta from rank 05 to rank 01 in 90 days.'
+                }
+              },
+              {
+                label: '06 • MONITORING',
+                title: 'Competitive Intelligence',
+                desc: 'We track every competitor in your category — where they win the answer, where they slip, and where you can move in.',
+                type: 'monitoring',
+                mock: {
+                  headerLeft: 'CATEGORY LEADERBOARD · JUL 2026',
+                  headerRight: '128 PROMPTS',
+                  rows: [
+                    { rank: '01', label: 'Vanta', score: '41%', change: '↑ 2' },
+                    { rank: '02', label: 'Drata', score: '28%', change: '↓ 1' },
+                    { rank: '03', label: 'Your brand', score: '23%', change: '↑ 8', isMatch: true },
+                    { rank: '04', label: 'Secureframe', score: '8%', change: '—' }
+                  ]
+                }
+              }
+            ]
+          },
+          geo: {
+            subtitle: 'From RAG database parsing to generative assistant index citations — six practices to secure AI recommendation authority.',
+            practices: [
+              {
+                label: '01 • BENCHMARK',
+                title: 'RAG Visibility Audit',
+                desc: 'We analyze how Retrieval-Augmented Generation engines process, index, and query your website. Identify indexing bugs and model attribution opportunities.',
+                type: 'audit',
+                mock: {
+                  headerLeft: 'CITEBOUND · RAG SCORE',
+                  headerRight: 'BASELINE · JUL 2026',
+                  score: 34,
+                  scoreLabel: 'Action Required',
+                  scorePeer: 'avg. peer score: 58',
+                  bars: [
+                    { label: 'SOURCES SYNCED', value: 40 },
+                    { label: 'CITATION QUALITY', value: 28 },
+                    { label: 'GRAPH VERIFICATION', value: 55 },
+                    { label: 'RAG ATTRIBUTION', value: 22 },
+                    { label: 'TOP QUERY RANK', value: 48 }
+                  ]
+                }
+              },
+              {
+                label: '02 • ANSWER ENGINE MATCHING',
+                title: 'Generative Answer Tracking',
+                desc: 'We trace citation counts inside Perplexity, Google Gemini, and OpenAI Search prompts, mapping recommendation share across cohorts.',
+                type: 'voice',
+                mock: {
+                  headerLeft: 'GENERATIVE SHARE · CATEGORY',
+                  headerRight: '↑ 5 PTS / MoM',
+                  distribution: [
+                    { label: 'YOUR BRAND', value: 21 },
+                    { label: 'COMPETITOR A', value: 45 },
+                    { label: 'COMPETITOR B', value: 24 },
+                    { label: 'OTHERS', value: 10 }
+                  ]
+                }
+              },
+              {
+                label: '03 • RETRIEVAL CONTENT',
+                title: 'Retrieval Content Engineering',
+                desc: 'We format and deploy structured content segments designed specifically for generative language models to query and cite.',
+                type: 'strategy',
+                mock: {
+                  query: 'best security analytics platform for AWS',
+                  statusLabel: 'SOURCED FROM · DOCUMENTATION HUB',
+                  extract: '“For AWS environments undergoing compliance checks, [Your Brand] provides autonomous security logs cited by multiple third-party audits...”',
+                  footerLeft: 'CITED BY · PERPLEXITY · GEMINI',
+                  footerRight: '22 SOURCE FILES'
+                }
+              },
+              {
+                label: '04 • GRAPHS',
+                title: 'Graph Node Verification',
+                desc: 'We declare organization entity schemas to link your site nodes directly to global semantic databases like Wikidata or Google Knowledge Graph.',
+                type: 'authority',
+                mock: {
+                  headerLeft: 'KNOWLEDGE GRAPH · ENTITY',
+                  headerRight: 'VERIFIED',
+                  brandName: 'Citebound.',
+                  brandType: 'RAG DATABASE INDEX',
+                  metadata: [
+                    { key: 'CONTEXT', val: 'Semantic Entity Hub Integration' },
+                    { key: 'NODES', val: 'Wikidata ID | DBpedia Node Sync' },
+                    { key: 'SYNTAX', val: 'JSON-LD Graph Schema compliant' }
+                  ]
+                }
+              },
+              {
+                label: '05 • CITATION',
+                title: 'Trust Citation PR',
+                desc: 'We acquire placement and backlinks on LLMs primary data sources, review directories, and technical documentation hubs.',
+                type: 'citation',
+                mock: {
+                  headerLeft: 'SOURCE CITES · LLM SOURCES',
+                  headerRight: '8 / 18 TRUSTED',
+                  badges: [
+                    { domain: 'github.com', dots: 3 },
+                    { domain: 'reddit.com', dots: 2 },
+                    { domain: 'stackoverflow.com', dots: 3 },
+                    { domain: 'wikipedia.org', dots: 1 }
+                  ],
+                  pendingLabel: '+ 4 PENDING',
+                  footnote: 'Source trust rating increased citation occurrence by 140% in 60 days.'
+                }
+              },
+              {
+                label: '06 • INTEL',
+                title: 'RAG Competitor Tracking',
+                desc: 'We parse the specific sources and websites cited by search agents to target directories your competitors own, then out-rank them.',
+                type: 'monitoring',
+                mock: {
+                  headerLeft: 'GEO LEADERBOARD · JUL 2026',
+                  headerRight: '64 LLM PROMPTS',
+                  rows: [
+                    { rank: '01', label: 'Competitor A', score: '45%', change: '↓ 4' },
+                    { rank: '02', label: 'Competitor B', score: '24%', change: '↑ 2' },
+                    { rank: '03', label: 'Your brand', score: '21%', change: '↑ 9', isMatch: true },
+                    { rank: '04', label: 'Others', score: '10%', change: '—' }
+                  ]
+                }
+              }
+            ]
+          },
+          'local-seo': {
+            subtitle: 'From local directory normalization to Map Pack dominance — six interlocking execution practices to capture regional buyers.',
+            practices: [
+              {
+                label: '01 • GAP AUDIT',
+                title: 'Map Pack Placement Audit',
+                desc: 'A full read of your location-specific citation density, GBP profile health, review velocity, and regional directory completeness.',
+                type: 'audit',
+                mock: {
+                  headerLeft: 'CITEBOUND · PROFILE HEALTH',
+                  headerRight: 'BASELINE · JUL 2026',
+                  score: 48,
+                  scoreLabel: 'Action Required',
+                  scorePeer: 'avg. peer score: 71',
+                  bars: [
+                    { label: 'GBP PROFILE SYNC', value: 88 },
+                    { label: 'NAP CONSISTENCY', value: 42 },
+                    { label: 'REVIEW DENSITY', value: 30 },
+                    { label: 'SCHEMA ACCURACY', value: 55 },
+                    { label: 'LOCAL BACKLINKS', value: 25 }
+                  ]
+                }
+              },
+              {
+                label: '02 • MAP TRACKING',
+                title: 'Regional Share of Map Pack',
+                desc: 'We track your business profile locations across multiple ZIP codes, prompt queries, and regional borders to map listing share.',
+                type: 'voice',
+                mock: {
+                  headerLeft: 'MAP PACK SHARE · 5KM RADIUS',
+                  headerRight: '↑ 8 PTS / MoM',
+                  distribution: [
+                    { label: 'YOUR BRAND', value: 30 },
+                    { label: 'COMPETITOR A', value: 35 },
+                    { label: 'COMPETITOR B', value: 25 },
+                    { label: 'OTHERS', value: 10 }
+                  ]
+                }
+              },
+              {
+                label: '03 • SCHEMAS',
+                title: 'Regional Schema & Content',
+                desc: 'We declare multi-location local schemas, NAP profiles, and neighborhood-specific pages to address hyper-local search intent.',
+                type: 'strategy',
+                mock: {
+                  query: 'sports therapist open near me',
+                  statusLabel: 'LOCAL PROFILE · MAP SYNCED',
+                  extract: '“With 210+ verified sports therapy listings, active booking, and same-day recovery sprints, [Your Brand] ranks #1 at...”',
+                  footerLeft: 'CITED BY · GOOGLE MAPS · APPLE MAPS',
+                  footerRight: '4 LOCATIONS'
+                }
+              },
+              {
+                label: '04 • PROFILE',
+                title: 'Google Profile Execution',
+                desc: 'We design, verify, and monitor Google Business Profiles, structured reviews routing, and multi-location attributes.',
+                type: 'authority',
+                mock: {
+                  headerLeft: 'GBP ENTITY STATE',
+                  headerRight: 'ACTIVE',
+                  brandName: 'Citebound.',
+                  brandType: 'LOCAL SERVICE HUB',
+                  metadata: [
+                    { key: 'MAPS', val: 'Google Business Profile & Apple Maps' },
+                    { key: 'REVIEWS', val: 'Automation-ready review aggregation' },
+                    { key: 'STATUS', val: 'Sub-5km Map Pack verified' }
+                  ]
+                }
+              },
+              {
+                label: '05 • CITATION',
+                title: 'NAP Directory Synced',
+                desc: 'We sync and lock Name, Address, and Phone details across 80+ global listing aggregators (Yelp, TripAdvisor, Foursquare).',
+                type: 'citation',
+                mock: {
+                  headerLeft: 'DIRECTORY SYNCED · LIVE DATA',
+                  headerRight: '72 / 80 LOCKED',
+                  badges: [
+                    { domain: 'yelp.com', dots: 3 },
+                    { domain: 'tripadvisor.com', dots: 3 },
+                    { domain: 'foursquare.com', dots: 2 },
+                    { domain: 'yellowpages.com', dots: 2 }
+                  ],
+                  pendingLabel: '+ 8 PENDING',
+                  footnote: 'NAP synchronization errors reduced citation drops by 98%.'
+                }
+              },
+              {
+                label: '06 • INVENTORY',
+                title: 'Regional Leaderboard',
+                desc: 'We track map rankings of competitors in your radius to target gaps in reviews, photo volume, and local attributes.',
+                type: 'monitoring',
+                mock: {
+                  headerLeft: 'LOCAL LEADERBOARD · JUL 2026',
+                  headerRight: 'ZIP 10001 radius',
+                  rows: [
+                    { rank: '01', label: 'Competitor A', score: '35%', change: '↓ 3' },
+                    { rank: '02', label: 'Your clinic/brand', score: '30%', change: '↑ 14', isMatch: true },
+                    { rank: '03', label: 'Competitor B', score: '25%', change: '↓ 1' },
+                    { rank: '04', label: 'Others', score: '10%', change: '—' }
+                  ]
+                }
+              }
+            ]
+          }
+        };
+
+        const sd = servicesData[solution.slug] ?? servicesData['seo'];
+
+        // Helper components to render beautiful mocks inside cards
+        const renderMock = (practice: typeof sd.practices[0]) => {
+          const v = practice.mock;
+          if (practice.type === 'audit') {
+            return (
+              <div className="flex flex-col h-full justify-between gap-4 select-none">
+                <div className="flex items-center justify-between border-b border-border/10 pb-2 text-[9px] tracking-wide text-text-muted">
+                  <span>{v.headerLeft}</span>
+                  <span>{v.headerRight}</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                  <div className="sm:col-span-5 flex flex-col gap-1 items-start justify-center border-b sm:border-b-0 sm:border-r border-border/10 pb-3 sm:pb-0 sm:pr-3">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-extrabold text-ink font-syne">{v.score}</span>
+                      <span className="text-[10px] text-text-muted">/100</span>
+                    </div>
+                    <div className="flex items-center gap-1 mt-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-signal inline-block animate-pulse" />
+                      <span className="text-[8px] font-semibold text-signal uppercase tracking-wider">{v.scoreLabel}</span>
+                    </div>
+                    <span className="text-[8px] text-text-muted mt-0.5">{v.scorePeer}</span>
+                  </div>
+                  <div className="sm:col-span-7 space-y-1.5">
+                    {v.bars.map((bar: any, idx: number) => (
+                      <div key={idx} className="space-y-0.5">
+                        <div className="flex items-center justify-between text-[8px] tracking-wide text-text-secondary">
+                          <span className="font-semibold uppercase truncate max-w-[80px]">{bar.label}</span>
+                          <span>{bar.value}%</span>
+                        </div>
+                        <div className="h-1 w-full bg-surface/50 rounded-full overflow-hidden">
+                          <div className="h-full bg-signal rounded-full" style={{ width: `${bar.value}%` }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          if (practice.type === 'voice') {
+            return (
+              <div className="flex flex-col h-full justify-between gap-3 select-none">
+                <div className="flex items-center justify-between border-b border-border/10 pb-2 text-[9px] tracking-wide text-text-muted">
+                  <span>{v.headerLeft}</span>
+                  <span className="text-signal font-semibold">{v.headerRight}</span>
+                </div>
+                <div className="flex h-5 w-full rounded overflow-hidden border border-border/40 my-1 bg-surface/50">
+                  {v.distribution.map((segment: any, idx: number) => (
+                    <div
+                      key={idx}
+                      className={`h-full ${idx === 0 ? 'bg-signal' : 'bg-surface'} transition-all`}
+                      style={{
+                        width: `${segment.value}%`,
+                        opacity: idx === 0 ? 1 : idx === 1 ? 0.8 : idx === 2 ? 0.5 : 0.25
+                      }}
+                    />
+                  ))}
+                </div>
+                <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 pb-1">
+                  {v.distribution.map((d: any, idx: number) => (
+                    <div key={idx} className="flex items-center justify-between text-[8px] border-b border-border/5 pb-1">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <span className={`w-1.5 h-1.5 rounded ${idx === 0 ? 'bg-signal' : 'bg-text-muted'} flex-shrink-0`} />
+                        <span className="text-text-secondary font-semibold truncate">{d.label}</span>
+                      </div>
+                      <span className="text-ink font-semibold">{d.value}%</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          }
+
+          if (practice.type === 'strategy') {
+            return (
+              <div className="flex flex-col h-full justify-between gap-3 text-[10px] sm:text-xs select-none">
+                <div className="flex items-center justify-between border border-border rounded-md px-3 py-1.5 bg-surface/20">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <span className="text-signal font-bold font-mono">&gt;</span>
+                    <span className="text-ink tracking-tight font-semibold truncate font-mono text-[9px]">{v.query}</span>
+                  </div>
+                  <span className="text-[8px] text-text-muted font-bold tracking-tight">ASK ↵</span>
+                </div>
+                <div className="space-y-1 py-0.5">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-1 h-1 rounded-full bg-signal" />
+                    <span className="text-[8px] font-semibold text-text-secondary uppercase tracking-wider">{v.statusLabel}</span>
+                  </div>
+                  <p className="font-lato italic text-[11px] text-text-secondary leading-relaxed border-l border-signal/40 pl-3">
+                    {v.extract}
+                  </p>
+                </div>
+                <div className="flex items-center justify-between border-t border-border/10 pt-2 text-[8px] text-text-muted">
+                  <span className="uppercase tracking-wide font-medium">{v.footerLeft}</span>
+                  <span className="text-signal font-bold tracking-wider">{v.footerRight}</span>
+                </div>
+              </div>
+            );
+          }
+
+          if (practice.type === 'authority') {
+            return (
+              <div className="flex flex-col h-full justify-between gap-4 select-none">
+                <div className="flex items-center justify-between border-b border-border/10 pb-2 text-[9px] tracking-wide text-text-muted">
+                  <span>{v.headerLeft}</span>
+                  <div className="flex items-center gap-1 text-[8px]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-signal" />
+                    <span className="text-signal font-semibold tracking-wider uppercase">{v.headerRight}</span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                  <div className="sm:col-span-4 flex flex-col items-start gap-0.5 border-b sm:border-b-0 sm:border-r border-border/10 pb-2 sm:pb-0 sm:pr-3">
+                    <span className="font-syne text-lg font-extrabold text-ink tracking-tight">{v.brandName}</span>
+                    <span className="text-[7.5px] text-text-muted leading-tight uppercase font-medium">{v.brandType}</span>
+                  </div>
+                  <div className="sm:col-span-8 space-y-1 font-mono text-[8px] text-text-secondary">
+                    {v.metadata.map((row: any, idx: number) => (
+                      <div key={idx} className="flex gap-2">
+                        <span className="font-semibold text-text-muted uppercase w-12 flex-shrink-0">{row.key}</span>
+                        <span className="text-ink truncate">{row.val}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          if (practice.type === 'citation') {
+            return (
+              <div className="flex flex-col h-full justify-between gap-4 select-none">
+                <div className="flex items-center justify-between border-b border-border/10 pb-2 text-[9px] tracking-wide text-text-muted">
+                  <span>{v.headerLeft}</span>
+                  <span className="text-signal font-semibold">{v.headerRight}</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5 py-0.5">
+                  {v.badges.map((b: any, idx: number) => (
+                    <div key={idx} className="flex items-center gap-1 bg-surface-hover/80 border border-border/60 rounded px-2 py-0.5 text-[8px]">
+                      <span className="text-text-secondary font-semibold">{b.domain}</span>
+                      <div className="flex gap-[1px]">
+                        {Array.from({ length: b.dots }).map((_, i) => (
+                          <span key={i} className="w-[3px] h-[3px] rounded-full bg-signal" />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  {v.pendingLabel && (
+                    <div className="flex items-center gap-1 border border-border/30 border-dashed rounded px-2 py-0.5 text-[8px] text-text-muted italic">
+                      {v.pendingLabel}
+                    </div>
+                  )}
+                </div>
+                <p className="font-lato italic text-[9px] text-text-muted leading-relaxed border-t border-border/5 pt-1.5 mt-0.5">
+                  {v.footnote}
+                </p>
+              </div>
+            );
+          }
+
+          if (practice.type === 'monitoring') {
+            return (
+              <div className="flex flex-col h-full justify-between gap-2 select-none">
+                <div className="flex items-center justify-between border-b border-border/10 pb-2 text-[9px] tracking-wide text-text-muted">
+                  <span>{v.headerLeft}</span>
+                  <span>{v.headerRight}</span>
+                </div>
+                <div className="space-y-1 pb-0.5">
+                  {v.rows.map((row: any, idx: number) => {
+                    const isUser = row.isMatch || row.label.toLowerCase().includes('your brand') || row.label.toLowerCase().includes('your clinic');
+                    return (
+                      <div
+                        key={idx}
+                        className={`flex items-center justify-between py-0.5 px-2 rounded text-[9.5px] border ${isUser ? 'bg-signal/8 border-signal/25' : 'border-transparent'}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className={`font-semibold ${isUser ? 'text-signal' : 'text-text-muted'}`}>
+                            {row.rank}
+                          </span>
+                          <span className={`font-semibold ${isUser ? 'text-ink' : 'text-text-secondary'}`}>
+                            {row.label}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className={`font-semibold ${isUser ? 'text-ink' : 'text-text-secondary'}`}>
+                            {row.score}
+                          </span>
+                          <span className={`w-8 text-right font-medium ${row.change.includes('↑') ? 'text-emerald-500 font-semibold' : row.change.includes('↓') ? 'text-red-500 font-semibold' : 'text-text-muted'}`}>
+                            {row.change}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          }
+
+          return null;
+        };
+
+        return (
+          <section className="py-32 md:py-48 border-t border-border">
+            <div className="max-w-[1400px] mx-auto px-6 md:px-16">
+
+              {/* Header Title block */}
+              <div className="max-w-4xl mb-20 md:mb-28">
+                <RevealText>
+                  <p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4 font-semibold">SERVICES</p>
+                </RevealText>
+
+                <RevealText delay={0.1} duration={2}>
+                  <h2 className="font-syne text-4xl md:text-6xl font-800 tracking-[-0.03em] leading-tight mb-6">
+                    We make your company easy for AI to find, understand, and recommend.
+                  </h2>
+                </RevealText>
+
+                <RevealText delay={0.2} duration={1.6}>
+                  <p className="font-lato text-base md:text-lg text-text-secondary leading-[1.85] max-w-2xl">
+                    {sd.subtitle}
+                  </p>
+                </RevealText>
+              </div>
+
+              {/* 6 Practices Grid layout */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {sd.practices.map((practice, idx) => (
+                  <RevealText key={idx} delay={idx * 0.1} duration={1.4}>
+                    <div className="border border-border bg-surface/30 hover:bg-surface/50 transition-colors duration-500 rounded-2xl p-6 md:p-8 flex flex-col gap-6 h-full justify-between">
+                      <div className="space-y-4">
+                        <span className="font-mono text-[10px] tracking-widest text-text-muted uppercase font-semibold">
+                          {practice.label}
+                        </span>
+                        <h3 className="font-syne text-2xl md:text-3xl font-800 tracking-tight text-ink">
+                          {practice.title}
+                        </h3>
+                        <p className="font-lato text-sm text-text-secondary leading-relaxed">
+                          {practice.desc}
+                        </p>
+                      </div>
+
+                      {/* Mockup Display Box */}
+                      <div className="rounded-xl border border-border bg-paper p-4 md:p-5 mt-4 min-h-[200px] flex flex-col justify-between shadow-[inset_0_1px_6px_rgba(0,0,0,0.02)]">
+                        {renderMock(practice)}
+                      </div>
+                    </div>
+                  </RevealText>
+                ))}
+              </div>
+
+              {/* Red/Orange full-width CTA Box */}
+              <RevealText delay={0.15} duration={1.4}>
+                <a
+                  href="#contact"
+                  className="mt-16 flex items-center justify-between bg-signal text-ink hover:bg-ink hover:text-paper px-8 py-5 md:py-6 rounded-xl font-syne text-sm md:text-base font-800 tracking-tight transition-all duration-500 ease-out group"
+                >
+                  <span>Book an AI Visibility Audit</span>
+                  <div className="flex items-end gap-[3px] select-none h-4">
+                    <span className="w-[3px] h-2 bg-ink group-hover:bg-paper transition-colors duration-500" />
+                    <span className="w-[3px] h-4 bg-ink group-hover:bg-paper transition-colors duration-500" />
+                    <span className="w-[3px] h-3 bg-ink group-hover:bg-paper transition-colors duration-500" />
+                  </div>
+                </a>
+              </RevealText>
+
+            </div>
+          </section>
+        );
+      })()}
+
+      {/* ── PLATFORMS ECOSYSTEM ── */}
+      {extra.visualExample && (() => {
+        const platforms = [
+          {
+            num: '01',
+            type: 'CONVERSATIONAL',
+            name: 'ChatGPT',
+            svg: (
+              <svg className="w-5 h-5 text-[#10a37f]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z" />
+              </svg>
+            )
+          },
+          {
+            num: '02',
+            type: 'CONVERSATIONAL',
+            name: 'Gemini',
+            svg: (
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2C12 2 12.5 8 16 11.5c3.5 3.5 8 4 8 4s-4.5.5-8 4C12.5 23 12 24 12 24s-.5-1-4-4.5c-3.5-3.5-8-4-8-4s4.5-.5 8-4C11.5 8 12 2 12 2z" fill="url(#geminiGrad2)" />
+                <defs>
+                  <linearGradient id="geminiGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#4285F4" />
+                    <stop offset="50%" stopColor="#9B51E0" />
+                    <stop offset="100%" stopColor="#EA4335" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            )
+          },
+          {
+            num: '03',
+            type: 'CONVERSATIONAL',
+            name: 'Claude',
+            svg: (
+              <svg className="w-5 h-5 text-[#cc5a37]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 4a1.5 1.5 0 0 1 1.5 1.5v3.1a1.5 1.5 0 0 1-3 0V5.5A1.5 1.5 0 0 1 12 4zm0 11.4a1.5 1.5 0 0 1 1.5 1.5v3.1a1.5 1.5 0 0 1-3 0v-3.1A1.5 1.5 0 0 1 12 15.4zm7.9-4.9a1.5 1.5 0 0 1 0 3v.1a1.5 1.5 0 0 1-3 0V13.5a1.5 1.5 0 0 1 3 0v.1zm-12.8 0a1.5 1.5 0 0 1 0 3h-.1a1.5 1.5 0 0 1 0-3h.1zm10.6-3.8A1.5 1.5 0 0 1 18 8.2l2.2 2.2a1.5 1.5 0 1 1-2.1 2.1l-2.2-2.2a1.5 1.5 0 0 1 1.8-1.8zm-11.4 0A1.5 1.5 0 0 1 6.3 8.2L4.1 10.4a1.5 1.5 0 1 1 2.1 2.1l2.2-2.2a1.5 1.5 0 0 1-2.1-2.1H6.3z" />
+              </svg>
+            )
+          },
+          {
+            num: '04',
+            type: 'ANSWER ENGINE',
+            name: 'Perplexity',
+            svg: (
+              <svg className="w-5 h-5 text-[#1fb8a6]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2v20M17 5L7 19M19 12H5M17 19L7 5" />
+              </svg>
+            )
+          },
+          {
+            num: '05',
+            type: 'ASSISTANT',
+            name: 'Copilot',
+            svg: (
+              <svg className="w-5 h-5 text-[#3b82f6]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <path d="M4.5 16.5c1.5-3 5-4.5 7.5-4.5s6 1.5 7.5 4.5" />
+                <path d="M12 12V4m0 0l-3 3m3-3l3 3" />
+              </svg>
+            )
+          },
+          {
+            num: '06',
+            type: 'SOCIAL AI',
+            name: 'Grok',
+            svg: (
+              <svg className="w-5 h-5 text-ink" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M4 4h4l4 6 4-6h4l-6 9 6 9h-4l-4-6-4 6H4l6-9z" />
+              </svg>
+            )
+          },
+          {
+            num: '07',
+            type: 'OPEN MODEL',
+            name: 'Deepseek',
+            svg: (
+              <svg className="w-5 h-5 text-[#1a73e8]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2a10 10 0 00-10 10 10 10 0 0010 10 10 10 0 0010-10c0-2-1.5-4-3-5" />
+                <path d="M12 12a3 3 0 100 6 3 3 0 000-6zm0-10v10" />
+              </svg>
+            )
+          },
+          {
+            num: '08',
+            type: 'SEARCH OVERLAY',
+            name: 'AI Overviews',
+            svg: (
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+              </svg>
+            )
+          }
+        ];
+
+        return (
+          <section className="py-24 md:py-36 border-t border-border bg-paper relative">
+            <div className="max-w-[1400px] mx-auto px-6 md:px-16">
+              <div className="max-w-4xl mb-16 md:mb-24">
+                <RevealText>
+                  <p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4 font-semibold">PLATFORMS</p>
+                </RevealText>
+                <RevealText delay={0.1}>
+                  <h2 className="font-syne text-3xl md:text-5xl lg:text-6xl font-800 tracking-[-0.03em] leading-tight">
+                    Eight surfaces where buyers<br className="hidden sm:block" />
+                    <span className="text-signal">ask, compare, and decide.</span>
+                  </h2>
+                </RevealText>
+                <RevealText delay={0.2}>
+                  <p className="font-lato text-base md:text-lg text-text-secondary mt-6 max-w-2xl leading-[1.85]">
+                    We track, optimize, and earn citations across the eight AI surfaces that already shape your shortlist.
+                  </p>
+                </RevealText>
+              </div>
+              <div className="border-t border-l border-border/80 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 rounded-2xl overflow-hidden">
+                {platforms.map((p, idx) => (
+                  <div key={idx} className="p-8 md:p-10 border-r border-b border-border/80 flex flex-col justify-between min-h-[190px] hover:bg-surface/30 transition-all duration-300">
+                    <div className="flex items-center gap-2 text-[10px] tracking-[0.16em] uppercase text-text-muted font-bold">
+                      <span>{p.num}</span>
+                      <span className="w-1.5 h-1.5 bg-signal flex-shrink-0" />
+                      <span>{p.type}</span>
+                    </div>
+                    <div className="flex items-center gap-4 mt-8">
+                      <div className="w-9 h-9 rounded-lg bg-surface/50 border border-border/40 flex items-center justify-center shadow-[inset_0_1px_4px_rgba(0,0,0,0.015)]">
+                        {p.svg}
+                      </div>
+                      <span className="font-syne text-lg font-800 tracking-tight text-ink">{p.name}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        );
+      })()}
+
+      {/* ── WHO WE WORK WITH ── */}
+      {extra.visualExample && (() => {
+        const whoWeWorkData: Record<string, {
+          headline: string;
+          sub: string;
+          industries: { num: string; title: string; tagline: string; query: string; audits: string[] }[];
+        }> = {
+          seo: {
+            headline: 'Companies that need to be on the shortlist.',
+            sub: 'Search visibility matters most where intent is highest. We work with brands competing for the queries below.',
+            industries: [
+              { num: '01', title: 'B2B SaaS', tagline: 'Comparison prompts decide the list.', query: 'best CRM for series B teams under 50', audits: ['Comparisons & alternatives', 'Category-leader prompts', 'Integration questions'] },
+              { num: '02', title: 'Professional Services', tagline: 'Authority signals decide the call.', query: 'best SEO agency for enterprise brands', audits: ['Practice-area positioning', 'Authority & expertise signals', 'Client outcome pages'] },
+              { num: '03', title: 'Funded Startups', tagline: 'Google frames you before the analyst does.', query: 'top series A devtools companies 2026', audits: ['Category-creation narrative', 'Founder & investor signals', 'Comparison clarity'] },
+              { num: '04', title: 'Healthcare', tagline: 'Trust signals beat brand awareness.', query: 'HIPAA-compliant telehealth platforms', audits: ['Compliance language', 'Clinical evidence sources', 'Provider directory signals'] },
+              { num: '05', title: 'Fintech & Finance', tagline: 'Regulators shape the answer.', query: 'alternatives to Stripe for marketplaces', audits: ['Regulatory trust signals', 'Fee & feature comparisons', 'Integration depth'] },
+              { num: '06', title: 'Cybersecurity', tagline: 'Google cites whoever the analysts cite.', query: 'best SIEM tools for mid-market', audits: ['Analyst coverage signals', 'Threat report citations', 'Review platform dominance'] },
+              { num: '07', title: 'Ecommerce', tagline: 'Review synthesis is the new shelf.', query: 'best running shoes for plantar fasciitis', audits: ['Review aggregation signals', 'Product schema & structure', 'Category page authority'] },
+              { num: '08', title: 'Local & Multi-Location', tagline: 'Recommendations get geographic.', query: 'top dermatologist in Brooklyn', audits: ['NAP consistency signals', 'Local content depth', 'Map & directory presence'] },
+            ]
+          },
+          aeo: {
+            headline: 'Brands that need to own the answer.',
+            sub: 'Answer engine optimization matters most when buyers ask before they click. We work with brands that want to be the cited source.',
+            industries: [
+              { num: '01', title: 'B2B SaaS', tagline: 'AI cites the clearest explainer.', query: 'how does AI-powered helpdesk work', audits: ['FAQ schema coverage', 'Definitional content depth', 'Question-answer alignment'] },
+              { num: '02', title: 'Professional Services', tagline: 'Expertise earns the citation.', query: 'what is the difference between AEO and SEO', audits: ['Thought leadership signals', 'Long-form explainer depth', 'Schema markup completeness'] },
+              { num: '03', title: 'Funded Startups', tagline: 'Be the definition of your category.', query: 'what is a usage-based pricing model', audits: ['Category-definition content', 'Comparison & contrast pages', 'Structured data coverage'] },
+              { num: '04', title: 'Healthcare', tagline: 'Patients ask; AI answers.', query: 'what are the symptoms of early-stage diabetes', audits: ['Medical entity accuracy', 'Source credibility signals', 'Condition & treatment depth'] },
+              { num: '05', title: 'Fintech & Finance', tagline: 'Complex questions need clear answers.', query: 'how does revenue-based financing work', audits: ['Regulated-term clarity', 'Jargon-to-plain-language gap', 'Feature explanation depth'] },
+              { num: '06', title: 'Cybersecurity', tagline: 'Define the threat; own the answer.', query: 'what is a zero-trust network model', audits: ['Technical definition accuracy', 'Use-case scenario content', 'Threat taxonomy coverage'] },
+              { num: '07', title: 'Ecommerce', tagline: 'Product questions become citations.', query: 'what fabric is best for athletic wear', audits: ['Product attribute depth', 'Buying-guide content', 'Material & spec schemas'] },
+              { num: '08', title: 'Education & Training', tagline: 'Learning queries need trusted answers.', query: 'what coding language should I learn first', audits: ['Curriculum clarity signals', 'Outcome & ROI language', 'Comparison content depth'] },
+            ]
+          },
+          geo: {
+            headline: 'Brands that need to be recommended.',
+            sub: 'Generative engine optimization matters most when AI models shortlist vendors. We help brands become the cited recommendation.',
+            industries: [
+              { num: '01', title: 'B2B SaaS', tagline: 'AI recommends the proven option.', query: 'best project management tool for remote teams', audits: ['Recommendation-signal density', 'Use-case clarity depth', 'Comparison page authority'] },
+              { num: '02', title: 'Professional Services', tagline: 'Cited by AI, trusted by buyers.', query: 'best intellectual property law firm for startups', audits: ['Practice-area authority', 'Client outcome signals', 'Third-party citation coverage'] },
+              { num: '03', title: 'Funded Startups', tagline: 'Get cited before the pitch deck.', query: 'top AI infrastructure companies to watch 2026', audits: ['Investor-facing signals', 'Media citation coverage', 'Category-leader narrative'] },
+              { num: '04', title: 'Healthcare', tagline: 'Generative AI surfaces trusted providers.', query: 'best telehealth platform for chronic care management', audits: ['Accreditation signals', 'Clinical outcome citations', 'Provider credibility depth'] },
+              { num: '05', title: 'Fintech & Finance', tagline: 'Compliance signals become recommendations.', query: 'best payment gateway for international SaaS', audits: ['Regulatory compliance signals', 'Integration partner citations', 'Security & trust language'] },
+              { num: '06', title: 'Cybersecurity', tagline: 'AI recommends the most-cited vendor.', query: 'best endpoint security solution for SMBs', audits: ['Analyst report citations', 'Threat-response signals', 'Customer proof depth'] },
+              { num: '07', title: 'Ecommerce', tagline: 'Product recommendations are earned.', query: 'best sustainable yoga mat brand', audits: ['Review synthesis signals', 'Brand value language', 'Product expert citations'] },
+              { num: '08', title: 'Local & Multi-Location', tagline: 'Local recommendations go AI-first.', query: 'top family dentist near downtown Austin', audits: ['Local authority signals', 'Review aggregation coverage', 'Geographic entity depth'] },
+            ]
+          },
+          'local-seo': {
+            headline: 'Local businesses that deserve to be found.',
+            sub: 'Local search intent is hyper-specific. We help businesses own the map pack, the AI answer, and the "near me" moment.',
+            industries: [
+              { num: '01', title: 'Restaurants & Hospitality', tagline: 'First result gets the reservation.', query: 'best Italian restaurant open now near me', audits: ['Google Business optimization', 'Menu schema coverage', 'Review velocity signals'] },
+              { num: '02', title: 'Healthcare & Clinics', tagline: 'Patients choose the closest trusted provider.', query: 'urgent care clinic accepting walkins near me', audits: ['NAP consistency signals', 'Specialty & service depth', 'Insurance & hours clarity'] },
+              { num: '03', title: 'Legal Services', tagline: 'Local trust wins the consult.', query: 'personal injury lawyer free consultation Brooklyn', audits: ['Local citation authority', 'Practice-area page depth', 'Review & credential signals'] },
+              { num: '04', title: 'Home Services', tagline: 'Emergency queries need instant answers.', query: '24 hour plumber near me emergency', audits: ['Service-area page coverage', 'Emergency keyword signals', 'Availability & response time'] },
+              { num: '05', title: 'Retail & Boutiques', tagline: 'In-store visits start online.', query: 'vintage clothing store open Saturday Chicago', audits: ['Inventory & hours schema', 'Neighborhood entity signals', 'Google Posts & offers'] },
+              { num: '06', title: 'Fitness & Wellness', tagline: 'Class starts with a search.', query: 'yoga studio with beginners class near downtown', audits: ['Class schedule schema', 'Trainer authority signals', 'Amenity & facility depth'] },
+              { num: '07', title: 'Real Estate', tagline: 'Local market expertise gets cited.', query: 'top real estate agent in Midtown Manhattan', audits: ['Neighborhood content depth', 'Listing & sold data signals', 'Agent authority coverage'] },
+              { num: '08', title: 'Automotive', tagline: 'Service intent is local and urgent.', query: 'best auto repair shop near me for Honda', audits: ['Brand & model specificity', 'Service-type page depth', 'Review recency signals'] },
+            ]
+          }
+        };
+
+        const slug = solution.slug as keyof typeof whoWeWorkData;
+        const wd = whoWeWorkData[slug] ?? whoWeWorkData.seo;
+
+        return (
+          <section className="py-24 md:py-36 border-t border-border">
+            <div className="max-w-[1400px] mx-auto px-6 md:px-16">
+
+              {/* Header */}
+              <div className="max-w-4xl mb-16 md:mb-20">
+                <RevealText>
+                  <p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4 font-semibold">WHO WE WORK WITH</p>
+                </RevealText>
+                <RevealText delay={0.1}>
+                  <h2 className="font-syne text-3xl md:text-5xl lg:text-6xl font-800 tracking-[-0.03em] leading-tight">
+                    {wd.headline.split('shortlist.').length > 1 ? (
+                      <>{wd.headline.split('shortlist.')[0]}<span className="text-signal">shortlist.</span></>
+                    ) : wd.headline.split('answer.').length > 1 ? (
+                      <>{wd.headline.split('answer.')[0]}<span className="text-signal">answer.</span></>
+                    ) : wd.headline.split('recommended.').length > 1 ? (
+                      <>{wd.headline.split('recommended.')[0]}<span className="text-signal">recommended.</span></>
+                    ) : wd.headline.split('found.').length > 1 ? (
+                      <>{wd.headline.split('found.')[0]}<span className="text-signal">found.</span></>
+                    ) : wd.headline}
+                  </h2>
+                </RevealText>
+                <RevealText delay={0.2}>
+                  <p className="font-lato text-base md:text-lg text-text-secondary mt-6 max-w-2xl leading-[1.85]">{wd.sub}</p>
+                </RevealText>
+              </div>
+
+              {/* 4-col × 2-row card grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-border/60 border border-border/60 rounded-2xl overflow-hidden">
+                {wd.industries.map((ind, idx) => (
+                  <RevealText key={idx} delay={idx * 0.05} duration={1.3}>
+                    <div className="bg-paper hover:bg-surface/40 transition-colors duration-500 p-6 md:p-7 flex flex-col gap-5 h-full">
+
+                      {/* Number badge */}
+                      <div className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-signal flex-shrink-0" />
+                        <span className="font-mono text-[10px] tracking-widest text-text-muted font-bold">{ind.num}</span>
+                      </div>
+
+                      {/* Title + tagline */}
+                      <div>
+                        <h3 className="font-syne text-lg md:text-xl font-800 tracking-tight text-ink mb-1">{ind.title}</h3>
+                        <p className="font-lato text-sm text-text-secondary leading-snug">{ind.tagline}</p>
+                      </div>
+
+                      {/* Buyers ask chip */}
+                      <div>
+                        <p className="font-lato text-[9.5px] tracking-[0.18em] uppercase text-text-muted font-semibold mb-2">BUYERS ASK</p>
+                        <div className="bg-ink rounded-md px-3 py-2.5 flex items-start gap-2">
+                          <span className="text-signal font-mono text-xs mt-0.5 flex-shrink-0">›</span>
+                          <span className="font-mono text-[11px] text-paper leading-snug">{ind.query}</span>
+                        </div>
+                      </div>
+
+                      {/* We audit for */}
+                      <div>
+                        <p className="font-lato text-[9.5px] tracking-[0.18em] uppercase text-text-muted font-semibold mb-2">WE AUDIT FOR</p>
+                        <ul className="space-y-1">
+                          {ind.audits.map((a, i) => (
+                            <li key={i} className="flex items-start gap-2 font-lato text-xs text-text-secondary">
+                              <span className="text-signal font-bold mt-[1px] flex-shrink-0">+</span>
+                              {a}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                    </div>
+                  </RevealText>
+                ))}
+              </div>
+
+            </div>
+          </section>
+        );
+      })()}
 
       {/* ── 4. ROADMAP ── */}
       <section className="py-32 md:py-48 border-t border-border">
@@ -618,6 +1957,87 @@ export default function SolutionDetail({ solution }: { solution: Solution }) {
         </div>
       </section>
 
+      {/* ── FAQ ── */}
+      {extra.visualExample && (() => {
+        const faqData: Record<string, { q: string; a: string }[]> = {
+          seo: [
+            { q: 'Is this the same as a traditional SEO audit?', a: 'No. Traditional SEO audits focus on rankings, pages, traffic, and technical health. This audit focuses on how AI systems describe, cite, compare, and recommend your brand in the moments buyers ask AI who to trust.' },
+            { q: 'Which AI platforms do you optimize for?', a: 'ChatGPT, Perplexity, Gemini, Claude, Copilot, Grok, and Google AI Overviews. The exact mix is adjusted based on your category and where your buyers are actually searching.' },
+            { q: 'Can you guarantee we rank #1 on Google?', a: 'No agency can guarantee specific rankings. What we guarantee is a rigorous process — comprehensive audits, evidence-based fixes, and clear reporting — so your site earns more visibility over time.' },
+            { q: 'Can our team implement the recommendations?', a: 'Yes. The action plan is designed for in-house SEO, content, and web teams. We can also support execution through a Growth or Program engagement when that\'s a better fit.' },
+          ],
+          aeo: [
+            { q: 'What exactly is Answer Engine Optimization?', a: 'AEO is the practice of structuring your content, schema, and authority signals so AI answer engines — ChatGPT, Gemini, Perplexity, and others — cite your brand when buyers ask questions in your category.' },
+            { q: 'Which answer engines do you optimize for?', a: 'ChatGPT, Perplexity, Gemini, Claude, Copilot, Grok, and Google AI Overviews. We adjust the platform mix based on where your buyers actually ask questions.' },
+            { q: 'Can you guarantee AI will cite us?', a: 'No. No agency can guarantee exact AI outputs — models update constantly. What we can guarantee is that we identify every signal that influences citation likelihood and give you a clear roadmap to improve them.' },
+            { q: 'How long before we see results?', a: 'Most clients see measurable citation improvements within 60–90 days of implementing our recommendations. Full authority-building typically takes 3–6 months depending on category competition.' },
+          ],
+          geo: [
+            { q: 'What makes GEO different from SEO or AEO?', a: 'GEO focuses specifically on earning recommendations inside generative AI responses — not just being indexed or cited once. It\'s about becoming the default brand a model surfaces when buyers ask for a vendor recommendation.' },
+            { q: 'Which generative platforms do you cover?', a: 'ChatGPT, Perplexity, Gemini, Claude, Copilot, Grok, and Google AI Overviews. We track recommendation share across all major surfaces and prioritize the ones where your buyers are active.' },
+            { q: 'Can you guarantee AI will recommend us?', a: 'No agency can guarantee specific AI outputs. What we can do is systematically improve every signal that influences whether a model recommends your brand — and show you exactly where you stand relative to competitors.' },
+            { q: 'Can our team implement the GEO roadmap?', a: 'Yes. The roadmap is designed for in-house content, SEO, and PR teams. We can also support execution directly through a Growth or Program engagement.' },
+          ],
+          'local-seo': [
+            { q: 'Is local SEO still relevant with AI search?', a: 'More than ever. AI-powered local answers (Google AI Overviews, ChatGPT with browsing, Perplexity) pull heavily from local signals — GBP, reviews, citations, NAP consistency. Local SEO now directly feeds AI recommendation visibility.' },
+            { q: 'Which platforms do you optimize for?', a: 'Google Business Profile, Apple Maps, Bing Places, Yelp, and key vertical directories — as well as Google AI Overviews, ChatGPT, and Perplexity for local query answers. We prioritize based on where your buyers actually search.' },
+            { q: 'Can you guarantee map pack rankings?', a: 'No. Local rankings depend on proximity, relevance, and prominence signals that we optimize but don\'t control. We guarantee a systematic process and clear reporting — most clients see measurable map pack improvements within 60–90 days.' },
+            { q: 'Do you work with multi-location businesses?', a: 'Yes. We have a dedicated multi-location framework that manages on a per-location basis — including GBP optimization, localized content, and citation consistency — scaled to 10 or 10,000 locations.' },
+          ],
+        };
+
+        const slug = solution.slug as keyof typeof faqData;
+        const faqs = faqData[slug] ?? faqData.seo;
+
+        return (
+          <section className="py-24 md:py-36 border-t border-border">
+            <div className="max-w-[1400px] mx-auto px-6 md:px-16">
+
+              {/* Header */}
+              <div className="mb-14 md:mb-16">
+                <RevealText>
+                  <p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-6 font-semibold">QUESTIONS</p>
+                </RevealText>
+                <RevealText delay={0.1}>
+                  <h2 className="font-syne text-3xl md:text-5xl lg:text-[3.5rem] font-800 tracking-[-0.03em] leading-tight max-w-3xl">
+                    What teams ask before they request an audit
+                  </h2>
+                </RevealText>
+              </div>
+
+              {/* Q&A rows */}
+              <div className="border-t border-border">
+                {faqs.map((item, idx) => (
+                  <RevealText key={idx} delay={idx * 0.08} duration={1.3}>
+                    <div className="grid grid-cols-12 gap-6 md:gap-12 py-10 md:py-12 border-b border-border/60">
+                      {/* Number */}
+                      <div className="col-span-12 md:col-span-1">
+                        <span className="font-mono text-[10px] tracking-widest text-text-muted font-bold">
+                          Q.{String(idx + 1).padStart(2, '0')}
+                        </span>
+                      </div>
+                      {/* Question */}
+                      <div className="col-span-12 md:col-span-4">
+                        <p className="font-syne text-lg md:text-xl font-700 tracking-tight text-ink leading-snug">
+                          {item.q}
+                        </p>
+                      </div>
+                      {/* Answer */}
+                      <div className="col-span-12 md:col-span-6 md:col-start-7">
+                        <p className="font-lato text-sm md:text-base text-text-secondary leading-[1.85]">
+                          {item.a}
+                        </p>
+                      </div>
+                    </div>
+                  </RevealText>
+                ))}
+              </div>
+
+            </div>
+          </section>
+        );
+      })()}
+
       {/* ── 9. FINAL CTA ── */}
       <section className="relative py-32 md:py-48 border-t border-border overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full bg-signal/[0.025] blur-[220px] pointer-events-none" />
@@ -657,6 +2077,6 @@ export default function SolutionDetail({ solution }: { solution: Solution }) {
         </div>
       </section>
 
-    </PageTransition>
+    </PageTransition >
   );
 }
