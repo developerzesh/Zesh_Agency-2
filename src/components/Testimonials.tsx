@@ -17,7 +17,7 @@ const testimonials = [
   {
     quote:
       "Extremely professional and always goal-oriented. Zesh understands that marketing must justify itself on the balance sheet — and they deliver exactly that.",
-    name: "Hafsa",
+    name: "Hafsa Sayed",
     role: "Founder, HAFSA Couture",
   },
 ];
