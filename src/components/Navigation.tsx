@@ -79,94 +79,96 @@ export default function Navigation() {
         className="fixed top-0 left-0 right-0 z-50"
       >
         {/* ── Bar ────────────────────────────────────────── */}
-        <div className="mx-6 md:mx-16 mt-5 bg-paper/85 backdrop-blur-2xl border border-border/40 rounded-2xl px-6 md:px-10 py-3.5 flex items-center justify-between">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-16">
+          <div className="mt-5 bg-paper/85 backdrop-blur-2xl border border-border/40 rounded-2xl px-6 md:px-10 py-3.5 flex items-center justify-between">
 
-          {/* Logo */}
-          <MagneticButton strength={0.2}>
-            <a href="/index.html" onClick={handleNavClick} className="block">
-              <img src={isDark ? "/images/zesh_logo.png" : "/images/zesh_logo_light.png"} alt="ZESH." className="h-6 md:h-7 w-auto" />
-            </a>
-          </MagneticButton>
+            {/* Logo */}
+            <MagneticButton strength={0.2}>
+              <a href="/index.html" onClick={handleNavClick} className="block">
+                <img src={isDark ? "/images/zesh_logo.png" : "/images/zesh_logo_light.png"} alt="ZESH." className="h-6 md:h-7 w-auto" />
+              </a>
+            </MagneticButton>
 
-          {/* ── Desktop nav ─────────────────────────────── */}
-          <div className="hidden lg:flex items-center">
+            {/* ── Desktop nav ─────────────────────────────── */}
+            <div className="hidden lg:flex items-center">
 
-            {/* Primary group */}
-            <div className="flex items-center">
-              {primaryNav.map((item) => (
-                <div
-                  key={item.path}
-                  onMouseEnter={() => item.submenu && showSubmenu(item.path)}
-                  onMouseLeave={hideSubmenu}
-                  className="relative"
-                >
-                  <a href={item.path} onClick={handleNavClick} className={linkClass(item.path)}>
-                    {item.label}
-                    {item.submenu && <Chevron active={activeSubmenu === item.path} />}
-                  </a>
-                </div>
-              ))}
+              {/* Primary group */}
+              <div className="flex items-center">
+                {primaryNav.map((item) => (
+                  <div
+                    key={item.path}
+                    onMouseEnter={() => item.submenu && showSubmenu(item.path)}
+                    onMouseLeave={hideSubmenu}
+                    className="relative"
+                  >
+                    <a href={item.path} onClick={handleNavClick} className={linkClass(item.path)}>
+                      {item.label}
+                      {item.submenu && <Chevron active={activeSubmenu === item.path} />}
+                    </a>
+                  </div>
+                ))}
+              </div>
+
+              {/* Divider */}
+              <span className="mx-3 h-4 w-px bg-border/60" />
+
+              {/* Secondary group */}
+              <div className="flex items-center">
+                {secondaryNav.map((item) => (
+                  <div
+                    key={item.path}
+                    onMouseEnter={() => item.submenu && showSubmenu(item.path)}
+                    onMouseLeave={hideSubmenu}
+                    className="relative"
+                  >
+                    <a href={item.path} onClick={handleNavClick} className={linkClass(item.path)}>
+                      {item.label}
+                      {item.submenu && <Chevron active={activeSubmenu === item.path} />}
+                    </a>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* Divider */}
-            <span className="mx-3 h-4 w-px bg-border/60" />
+            {/* ── Right controls ──────────────────────────── */}
+            <div className="flex items-center gap-3">
 
-            {/* Secondary group */}
-            <div className="flex items-center">
-              {secondaryNav.map((item) => (
-                <div
-                  key={item.path}
-                  onMouseEnter={() => item.submenu && showSubmenu(item.path)}
-                  onMouseLeave={hideSubmenu}
-                  className="relative"
-                >
-                  <a href={item.path} onClick={handleNavClick} className={linkClass(item.path)}>
-                    {item.label}
-                    {item.submenu && <Chevron active={activeSubmenu === item.path} />}
-                  </a>
-                </div>
-              ))}
+              {/* Theme toggle */}
+              <button
+                onClick={toggleTheme}
+                className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg text-ink/40 hover:text-ink hover:bg-surface/60 transition-all duration-300"
+                aria-label="Toggle theme"
+              >
+                {isDark ? (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                  </svg>
+                ) : (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                  </svg>
+                )}
+              </button>
+
+              {/* Contact CTA */}
+              <a
+                href="/contact.html"
+                onClick={handleNavClick}
+                className="hidden lg:inline-flex items-center font-lato text-[11px] tracking-[0.12em] uppercase px-4 py-2 rounded-lg bg-ink text-paper hover:bg-ink/80 transition-all duration-300"
+              >
+                Contact
+              </a>
+
+              {/* Mobile hamburger */}
+              <button onClick={() => setIsOpen(!isOpen)} className="lg:hidden flex flex-col gap-1.5 w-7 ml-1" aria-label="Open menu">
+                <motion.span animate={isOpen ? { rotate: 45, y: 5 } : { rotate: 0, y: 0 }} className="block h-[1.5px] w-full bg-ink origin-center" />
+                <motion.span animate={isOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }} className="block h-[1.5px] w-full bg-ink origin-center" />
+                <motion.span animate={isOpen ? { rotate: -45, y: -5 } : { rotate: 0, y: 0 }} className="block h-[1.5px] w-full bg-ink origin-center" />
+              </button>
             </div>
-          </div>
-
-          {/* ── Right controls ──────────────────────────── */}
-          <div className="flex items-center gap-3">
-
-            {/* Theme toggle */}
-            <button
-              onClick={toggleTheme}
-              className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg text-ink/40 hover:text-ink hover:bg-surface/60 transition-all duration-300"
-              aria-label="Toggle theme"
-            >
-              {isDark ? (
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
-                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-                  <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
-                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-                </svg>
-              ) : (
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-                </svg>
-              )}
-            </button>
-
-            {/* Contact CTA */}
-            <a
-              href="/contact.html"
-              onClick={handleNavClick}
-              className="hidden lg:inline-flex items-center font-lato text-[11px] tracking-[0.12em] uppercase px-4 py-2 rounded-lg bg-ink text-paper hover:bg-ink/80 transition-all duration-300"
-            >
-              Contact
-            </a>
-
-            {/* Mobile hamburger */}
-            <button onClick={() => setIsOpen(!isOpen)} className="lg:hidden flex flex-col gap-1.5 w-7 ml-1" aria-label="Open menu">
-              <motion.span animate={isOpen ? { rotate: 45, y: 5 } : { rotate: 0, y: 0 }} className="block h-[1.5px] w-full bg-ink origin-center" />
-              <motion.span animate={isOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }} className="block h-[1.5px] w-full bg-ink origin-center" />
-              <motion.span animate={isOpen ? { rotate: -45, y: -5 } : { rotate: 0, y: 0 }} className="block h-[1.5px] w-full bg-ink origin-center" />
-            </button>
           </div>
         </div>
 
