@@ -31,9 +31,9 @@ export const navLinks = [
 // ── Hero Section ──────────────────────────────────────────
 export const heroContent = {
   badge: 'Trusted by brands backed by META and Shark Tank',
-  headline: 'Empowering businesses with search optimization, generative discovery, and modern growth systems.',
-  description: 'We are a strategic growth consultancy. We scale brands through high-converting web engineering, search engine optimization (SEO), and generative search presence (AEO & GEO). No vanity metrics. Just clear, predictable pipeline growth.',
-  primaryCTA: { label: 'Book a Discovery Call', path: '/contact' },
+  headline: 'Empowering Businesses with Creative, Marketing & Technology Solutions',
+  description: 'Trusted by million-dollar enterprises and powered by top-tier expertise.',
+  primaryCTA: { label: 'Schedule a Free Consultation', path: '/contact' },
   secondaryCTA: { label: 'View Case Studies', path: '/case-studies' },
   microcopy: 'Trusted by billion-dollar enterprises and powered by top-tier expertise.',
 } as const;

@@ -48,7 +48,39 @@ export default function About() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-14 md:gap-20">
             <div className="md:col-span-5 md:sticky md:top-40 md:self-start">
               <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">PRINCIPLES</p></RevealText>
-              <RevealText delay={0.1}><h2 className="font-syne text-5xl md:text-6xl font-800 tracking-[-0.03em]">How we work<span className="text-signal">.</span></h2></RevealText>
+              <RevealText delay={0.1}><h2 className="font-syne text-5xl md:text-6xl font-800 tracking-[-0.03em] mb-6">How we work<span className="text-signal">.</span></h2></RevealText>
+              <RevealText delay={0.2}>
+                <p className="font-lato text-sm md:text-base text-text-secondary leading-[1.85] mb-10 max-w-sm">
+                  We don't use account managers or sales layers. When you partner with Zesh, senior engineers and strategists work directly on your growth systems — with full transparency on every action and outcome.
+                </p>
+              </RevealText>
+              <RevealText delay={0.3}>
+                <div className="flex flex-col gap-4">
+                  <a
+                    href="https://calendar.app.google/SU1NfUdT8yYEVbVe7"
+                    className="group flex items-center gap-4"
+                  >
+                    <span className="w-10 h-10 rounded-full bg-ink flex items-center justify-center group-hover:bg-signal transition-colors duration-[800ms] flex-shrink-0">
+                      <motion.span
+                        animate={{ x: [0, 3, 0] }}
+                        transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                        className="text-paper text-sm"
+                      >
+                        →
+                      </motion.span>
+                    </span>
+                    <span className="font-lato text-sm font-medium text-ink group-hover:text-signal transition-colors duration-500">
+                      Schedule Discovery Call
+                    </span>
+                  </a>
+                  <a
+                    href="/case-studies.html"
+                    className="font-lato text-sm text-text-muted hover:text-ink transition-colors duration-700 sig-hover pl-14"
+                  >
+                    View Case Studies
+                  </a>
+                </div>
+              </RevealText>
             </div>
             <div className="md:col-span-5 md:col-start-8">
               {values.map((v, i) => (

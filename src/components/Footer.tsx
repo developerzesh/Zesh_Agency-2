@@ -62,6 +62,7 @@ export default function Footer() {
                 { label: 'Why Partner With Us', path: '/about.html' },
                 { label: 'Featured Cases', path: '/case-studies.html' },
                 { label: 'Insights & Advisory', path: '/insights.html' },
+                { label: 'Blog & Articles', path: '/blog.html' },
                 { label: 'Careers', path: '/careers.html' },
               ].map((l) => (
                 <li key={l.label}>

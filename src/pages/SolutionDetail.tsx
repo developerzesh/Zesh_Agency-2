@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import RevealText from '../components/RevealText';
 import MagneticButton from '../components/MagneticButton';
 import PageTransition from '../components/PageTransition';
@@ -9,6 +9,170 @@ import type { Solution } from '../lib/data';
 import { caseStudies } from '../lib/data';
 
 const slowEase = [0.22, 1, 0.36, 1] as [number, number, number, number];
+
+// ── Per-solution capability descriptions ──────────────────────────────────────
+// Indexed by slug → array of descriptions (mirrors solution.features order)
+const capabilityDescriptions: Record<string, string[]> = {
+  seo: [
+    'We rebuild your site\'s HTML/CSS architecture from the ground up — correcting crawl budget leaks, fixing broken canonical chains, and ensuring every page is indexable within 72 hours of deployment.',
+    'We map each buyer intent stage to dedicated content silos — informational, navigational, and transactional — so every page earns rankings for the queries that lead directly to revenue.',
+    'We deploy speed-optimized, programmatic comparison and alternative landing pages hosted on your domain, intercepting competitor search traffic at the exact point of decision.',
+    'We identify the 40–60 high-intent queries your competitors rank for but you don\'t, then systematically build the pages and internal links needed to capture that traffic.',
+    'We engineer every page to pass Core Web Vitals — targeting sub-200ms TTFB, sub-1s LCP, and zero CLS — directly influencing Google\'s page experience ranking signal.',
+    'We continuously monitor Google Search Console for crawl errors, indexation gaps, and ranking regression — then deploy corrective optimizations before they impact traffic.',
+  ],
+  aeo: [
+    'We systematically prompt ChatGPT, Claude, and Perplexity with your target queries to map where your brand appears and where competitors own the citations, establishing your baseline.',
+    'We run structured tests across major LLM platforms every two weeks, evaluating which prompt variations yield citations for your brand and adjusting entity signals accordingly.',
+    'We declare clean JSON-LD Organization, Product, and Person schemas on your domain, giving AI crawlers the structured metadata they need to cite your brand with confidence.',
+    'We track your share of AI-generated citations across a standardized prompt library and report on growth monthly, closing gaps with targeted entity-building sprints.',
+    'We build a semantic graph connecting your brand, products, founders, and use cases across Wikidata, Crunchbase, and related reference nodes — forming a trusted entity ecosystem.',
+    'We create and verify your brand\'s entries in Wikipedia, Wikidata, Google Knowledge Panel, and industry-specific databases, establishing the authoritative record AI models trust.',
+  ],
+  geo: [
+    'We analyze your documentation and content architecture against what Perplexity, Gemini, and Bing Copilot actually retrieve — then restructure your pages to match RAG context windows.',
+    'We engineer dedicated content modules that map your brand\'s answers to the exact synthetic query patterns generative search engines construct, ensuring your domain is surfaced first.',
+    'We verify your content is being ingested by AI indexing pipelines using live API probes and structured metadata signals that trigger retrieval-system inclusion.',
+    'We run systematic SGE citation audits to determine which generative answer environments cite your brand, scoring your current share of AI-generated answers.',
+    'We write content explicitly designed for AI context window retrieval — concise summary paragraphs, Q&A modules, and structured fact layers that generative engines prefer to surface.',
+    'We deploy weekly recommendation monitoring across 20–40 target queries, identifying gaps and triggering targeted content sprints to expand your AI answer footprint.',
+  ],
+  'web-dev': [
+    'We build your site on a zero-dependency static stack — vanilla HTML, CSS, and clean JavaScript — achieving sub-100ms First Contentful Paint and 99+ PageSpeed scores out of the box.',
+    'We engineer multi-step intake forms that qualify buyer intent, budget, and timeline before they book a call — reducing unqualified demos and protecting your sales team\'s time.',
+    'We identify and eliminate every Core Web Vitals failure on your site, from image optimization to script deferral, directly improving your Google page experience ranking signal.',
+    'We design every page, CTA, and form with conversion as the primary objective — engineering user journeys proven to increase demo requests and reduce drop-off rates.',
+    'We integrate your intake forms, lead routing logic, and attribution tracking directly with HubSpot, Salesforce, or your CRM of choice via clean, documented API endpoints.',
+    'We validate every page against PageSpeed Insights targets and deploy your site to an edge CDN, ensuring sub-second global load times for visitors in every region.',
+  ],
+  'local-seo': [
+    'We fully optimize your Google Business Profile — categories, descriptions, Q&As, photos, and attributes — to maximize your prominence score in the local Map Pack algorithm.',
+    'We deploy city-specific and neighborhood-specific landing pages with LocalBusiness schema, GeoCoordinates, and intent-matched content to intercept local buyers for each location.',
+    'We build and automate a review acquisition funnel that triggers after each appointment or purchase, systematically growing your verified review count without manual effort.',
+    'We audit and correct your NAP data across 80+ local directories, ensuring Google sees consistent business information across every citation source it crawls.',
+    'We build authoritative local citations in industry-specific and regional directories relevant to your market, expanding your footprint in the local link graph.',
+    'We deploy LocalBusiness, GeoCoordinates, and Service schema on every location page, giving Google the structured data it needs to understand your business\'s geographic service area.',
+  ],
+  'lead-gen': [
+    'We engineer multi-step intake forms that ask the right questions in the right order — qualifying intent, budget, and timeline before connecting prospects with your sales team.',
+    'We connect your qualified leads directly into HubSpot, Salesforce, or your CRM, ensuring every submission is automatically enriched, scored, and routed to the right rep.',
+    'We integrate real-time data enrichment APIs (Clearbit, Apollo) to auto-populate company size, tech stack, and firmographic data on every form submission — without asking the buyer.',
+    'We design lead scoring models that rank inbound prospects by budget tier, intent signals, and engagement behavior — so your sales team always knows which leads to call first.',
+    'We build conditional routing logic that assigns each qualified lead to the right sales rep, team, or calendar based on industry, deal size, and declared timeline.',
+    'We build dashboard reporting that connects every lead source, form entry, and pipeline stage to closed revenue — giving you full-funnel attribution in real time.',
+  ],
+  'social-media': [
+    'We study your communication style, vocabulary, and core beliefs through structured founder interviews — then write every post in a voice that feels authentically yours.',
+    'We systematically repurpose your existing client case studies into high-performing LinkedIn posts, turning dormant results data into compounding thought leadership assets.',
+    'We define 4–6 content pillars aligned with your buyers\' decision-making pain points, mixing opinion pieces, industry analysis, and outcome-first case studies.',
+    'We write content that addresses the specific problems your ideal buyers are responsible for solving — attracting enterprise decision-makers, not general audiences.',
+    'We plan and execute multi-post LinkedIn series and Twitter threads that build your executive brand narrative over weeks, not single isolated posts.',
+    'We schedule and distribute every post at peak engagement windows, track follower quality metrics, and feed performance data back into content strategy each month.',
+  ],
+  consultation: [
+    'We run a structured search gap analysis using live Search Console data, Ahrefs, and Semrush to identify which competitor queries you\'re invisible for and why.',
+    'We analyze your full marketing funnel — from traffic source to closed deal — identifying exactly where prospects drop off and what revenue those drop-offs represent.',
+    'We audit your site\'s code, page speed, structured data, and indexation status to identify every technical bottleneck preventing search engine discovery and ranking.',
+    'We build a custom ROI model mapping your organic traffic potential to pipeline value — showing exactly what compounding search investment returns over 6 and 12 months.',
+    'We deliver a written, step-by-step execution blueprint with prioritized actions, keyword targets, and 90-day milestones your team can implement immediately after the workshop.',
+    'We provide ongoing principal-led oversight sessions to validate that the roadmap is being executed correctly and adjust strategy based on live performance data.',
+  ],
+};
+
+// ── Scroll-driven Capability Accordion ────────────────────────────────────────
+function CapabilityAccordion({ features, slug }: { features: string[]; slug: string }) {
+  const descriptions = capabilityDescriptions[slug] ?? [];
+  const [activeIndex, setActiveIndex] = useState<number>(0);
+  const rowRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // The sticky heading sits at top-40 = 160px from the viewport top.
+  // On scroll, activate whichever row's top edge is closest to that anchor line.
+  useEffect(() => {
+    const STICKY_TOP = 160; // px — matches md:sticky md:top-40
+
+    const findActive = () => {
+      let bestIndex = 0;
+      let bestDist = Infinity;
+      rowRefs.current.forEach((el, i) => {
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        // Use the midpoint of the row so it snaps when truly aligned
+        const dist = Math.abs(rect.top - STICKY_TOP);
+        if (dist < bestDist) {
+          bestDist = dist;
+          bestIndex = i;
+        }
+      });
+      setActiveIndex(bestIndex);
+    };
+
+    // Run once on mount to set initial state
+    findActive();
+
+    window.addEventListener('scroll', findActive, { passive: true });
+    return () => window.removeEventListener('scroll', findActive);
+  }, [features.length]);
+
+  return (
+    <div>
+      {features.map((f, i) => {
+        const isActive = activeIndex === i;
+        const desc = descriptions[i] ?? '';
+        return (
+          <div
+            key={f}
+            ref={el => { rowRefs.current[i] = el; }}
+            className="border-b border-border"
+          >
+            {/* Row header — always visible */}
+            <button
+              onClick={() => setActiveIndex(isActive ? -1 : i)}
+              className="group w-full flex items-center justify-between gap-6 py-6 text-left cursor-pointer"
+            >
+              <div className="flex items-center gap-5">
+                <span className="font-lato text-[10px] text-text-muted w-6 flex-shrink-0">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span
+                  className={`font-lato text-base md:text-lg transition-colors duration-500 ${isActive ? 'text-ink' : 'text-text-secondary group-hover:text-ink'
+                    }`}
+                >
+                  {f}
+                </span>
+              </div>
+              {/* Animated +/– indicator */}
+              <motion.span
+                animate={{ rotate: isActive ? 45 : 0 }}
+                transition={{ duration: 0.4, ease: slowEase }}
+                className="text-signal text-xl leading-none flex-shrink-0 select-none"
+              >
+                +
+              </motion.span>
+            </button>
+
+            {/* Animated description panel */}
+            <AnimatePresence initial={false}>
+              {isActive && desc && (
+                <motion.div
+                  key="desc"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.55, ease: slowEase }}
+                  className="overflow-hidden"
+                >
+                  <p className="font-lato text-sm text-text-secondary leading-[1.85] pb-6 pl-11 max-w-xl">
+                    {desc}
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 // ── TypewriterAI: streams text word-by-word like ChatGPT ──────────────────────
 type AiChunk = { bold?: boolean; text: string };
@@ -635,7 +799,7 @@ export default function SolutionDetail({ solution }: { solution: Solution }) {
 
 
       {/* ── 2. WHAT WE DELIVER ── */}
-      <section className="py-32 md:py-48 border-t border-border">
+      {/* <section className="py-32 md:py-48 border-t border-border">
         <div className="max-w-[1400px] mx-auto px-6 md:px-16">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-20">
             <div className="md:col-span-4 md:sticky md:top-40 md:self-start">
@@ -657,7 +821,7 @@ export default function SolutionDetail({ solution }: { solution: Solution }) {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* ── 3. CORE CAPABILITIES ── */}
       <section className="py-32 md:py-48 border-t border-border">
@@ -674,25 +838,7 @@ export default function SolutionDetail({ solution }: { solution: Solution }) {
               </RevealText>
             </div>
             <div className="md:col-span-7 md:col-start-6">
-              {solution.features.map((f, i) => (
-                <RevealText key={f} delay={0.1 + i * 0.06} duration={1.2}>
-                  <motion.div
-                    whileHover={{ x: 6 }}
-                    transition={{ duration: 0.8, ease: slowEase }}
-                    className="group flex items-center justify-between gap-6 py-6 border-b border-border"
-                  >
-                    <div className="flex items-center gap-5">
-                      <span className="font-lato text-[10px] text-text-muted w-6 flex-shrink-0">
-                        {String(i + 1).padStart(2, '0')}
-                      </span>
-                      <span className="font-lato text-base md:text-lg text-text-secondary group-hover:text-ink transition-colors duration-[1200ms]">
-                        {f}
-                      </span>
-                    </div>
-                    <span className="text-signal opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex-shrink-0">→</span>
-                  </motion.div>
-                </RevealText>
-              ))}
+              <CapabilityAccordion features={solution.features} slug={solution.slug} />
             </div>
           </div>
         </div>
@@ -1140,31 +1286,35 @@ export default function SolutionDetail({ solution }: { solution: Solution }) {
           const v = practice.mock;
           if (practice.type === 'audit') {
             return (
-              <div className="flex flex-col h-full justify-between gap-4 select-none">
+              <div className="flex flex-col h-full gap-3 select-none">
+                {/* Header row */}
                 <div className="flex items-center justify-between border-b border-border/10 pb-2 text-[9px] tracking-wide text-text-muted">
                   <span>{v.headerLeft}</span>
                   <span>{v.headerRight}</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
-                  <div className="sm:col-span-5 flex flex-col gap-1 items-start justify-center border-b sm:border-b-0 sm:border-r border-border/10 pb-3 sm:pb-0 sm:pr-3">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-extrabold text-ink font-syne">{v.score}</span>
-                      <span className="text-[10px] text-text-muted">/100</span>
+                {/* Score + Bars row */}
+                <div className="flex flex-row items-center gap-4 flex-1">
+                  {/* Score panel — fixed width */}
+                  <div className="flex flex-col items-start justify-center gap-1 pr-4 border-r border-border/20 flex-shrink-0 w-[90px]">
+                    <div className="flex items-baseline gap-0.5 leading-none">
+                      <span className="text-4xl font-extrabold text-ink font-syne leading-none">{v.score}</span>
+                      <span className="text-[10px] text-text-muted self-end pb-0.5">/100</span>
                     </div>
-                    <div className="flex items-center gap-1 mt-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-signal inline-block animate-pulse" />
-                      <span className="text-[8px] font-semibold text-signal uppercase tracking-wider">{v.scoreLabel}</span>
+                    <div className="flex items-center gap-1 mt-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-signal inline-block animate-pulse flex-shrink-0" />
+                      <span className="text-[8px] font-semibold text-signal uppercase tracking-wider leading-tight">{v.scoreLabel}</span>
                     </div>
-                    <span className="text-[8px] text-text-muted mt-0.5">{v.scorePeer}</span>
+                    <span className="text-[8px] text-text-muted mt-0.5 leading-tight">{v.scorePeer}</span>
                   </div>
-                  <div className="sm:col-span-7 space-y-1.5">
+                  {/* Bars panel — fills remaining space */}
+                  <div className="flex flex-col justify-center gap-2 flex-1">
                     {v.bars.map((bar: any, idx: number) => (
                       <div key={idx} className="space-y-0.5">
                         <div className="flex items-center justify-between text-[8px] tracking-wide text-text-secondary">
-                          <span className="font-semibold uppercase truncate max-w-[80px]">{bar.label}</span>
-                          <span>{bar.value}%</span>
+                          <span className="font-semibold uppercase">{bar.label}</span>
+                          <span className="font-semibold text-ink">{bar.value}%</span>
                         </div>
-                        <div className="h-1 w-full bg-surface/50 rounded-full overflow-hidden">
+                        <div className="h-[3px] w-full bg-border/30 rounded-full overflow-hidden">
                           <div className="h-full bg-signal rounded-full" style={{ width: `${bar.value}%` }} />
                         </div>
                       </div>
@@ -1813,7 +1963,7 @@ export default function SolutionDetail({ solution }: { solution: Solution }) {
       </section>
 
       {/* ── 7. EXAMPLE / DEMONSTRATION ── */}
-      <section className="py-32 md:py-48 border-t border-border">
+      {/* <section className="py-32 md:py-48 border-t border-border">
         <div className="max-w-[1400px] mx-auto px-6 md:px-16">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-20">
             <div className="md:col-span-4 md:sticky md:top-40 md:self-start">
@@ -1847,10 +1997,10 @@ export default function SolutionDetail({ solution }: { solution: Solution }) {
                     </p>
                   </motion.div>
                 </RevealText>
-              ))}
+              ))} */}
 
-              {/* Visual Example Mock Block */}
-              {extra.visualExample && (
+      {/* Visual Example Mock Block */}
+      {/* {extra.visualExample && (
                 <RevealText delay={0.3} duration={1.4}>
                   <div className="mt-16 bg-surface/20 backdrop-blur-3xl border border-border/50 rounded-2xl p-6 md:p-8">
                     <p className="font-lato text-[10px] tracking-[0.15em] uppercase text-signal font-bold mb-3">
@@ -1877,7 +2027,7 @@ export default function SolutionDetail({ solution }: { solution: Solution }) {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* ── 8. CASE STUDY ── */}
       <section className="py-32 md:py-48 border-t border-border">

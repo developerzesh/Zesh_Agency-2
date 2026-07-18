@@ -10,7 +10,7 @@ export default defineConfig(async ({ mode }) => {
     // @ts-ignore
     const m = await import('./.vite-source-tags.js');
     plugins.push(m.sourceTags());
-  } catch {}
+  } catch { }
 
   const env = loadEnv(mode, process.cwd(), ['VITE_', 'NEXT_PUBLIC_']);
   const processEnvDefines: Record<string, string> = {};
@@ -28,6 +28,7 @@ export default defineConfig(async ({ mode }) => {
     industries: resolve(__dirname, 'industries.html'),
     'case-studies': resolve(__dirname, 'case-studies.html'),
     insights: resolve(__dirname, 'insights.html'),
+    blog: resolve(__dirname, 'blog.html'),
     journal: resolve(__dirname, 'journal.html'),
     careers: resolve(__dirname, 'careers.html'),
     contact: resolve(__dirname, 'contact.html'),

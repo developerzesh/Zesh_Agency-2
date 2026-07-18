@@ -21,6 +21,7 @@ const primaryNav: NavItem[] = [
 const secondaryNav: NavItem[] = [
   { label: 'About', path: '/about.html' },
   { label: 'Insights', path: '/insights.html', submenu: [{ label: 'All Articles', path: '/insights.html' }, ...insightCategories.map(c => ({ label: c, path: '/insights.html' }))] },
+  { label: 'Blog', path: '/blog.html', submenu: [{ label: 'All Posts', path: '/blog.html' }, { label: 'SEO & Search', path: '/blog.html' }, { label: 'AI & GEO', path: '/blog.html' }, { label: 'Web Performance', path: '/blog.html' }, { label: 'Growth Strategy', path: '/blog.html' }] },
   { label: 'Careers', path: '/careers.html', submenu: [{ label: 'Open Roles', path: '/careers.html' }] },
 ];
 
@@ -46,7 +47,7 @@ export default function Navigation() {
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
   const pathname = window.location.pathname;
   const { startLoading } = useCursor();
-  const submenuTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const submenuTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const { isDark, toggleTheme } = useTheme();
 
   const handleNavClick = () => { startLoading(); setIsOpen(false); };

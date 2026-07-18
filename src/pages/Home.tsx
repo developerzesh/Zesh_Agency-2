@@ -1,11 +1,12 @@
-import { useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform, useMotionValue, useSpring } from 'framer-motion';
+import { useEffect, useRef, useState } from 'react';
+import { motion, useScroll, useTransform, useMotionValue, useSpring, AnimatePresence } from 'framer-motion';
 import ParticleField from '../components/ParticleField';
 import MagneticButton from '../components/MagneticButton';
 import RevealText from '../components/RevealText';
 import CinematicImage from '../components/CinematicImage';
 import PageTransition from '../components/PageTransition';
-import { solutions, industries, caseStudies, stats, heroContent, trustLabel, trustLogos, reasons } from '../lib/data';
+import { solutions, industries, caseStudies, stats, heroContent, trustLabel, trustLogos, reasons, values } from '../lib/data';
+import { blogPosts } from '../lib/blogData.ts';
 import Testimonials from '../components/Testimonials';
 
 const slowEase = [0.22, 1, 0.36, 1] as [number, number, number, number];
@@ -49,7 +50,7 @@ function HeroSection() {
           transition={{ duration: 1.4, delay: 0.3, ease: slowEase }}
           className="flex flex-wrap items-center gap-4 font-lato text-[11px] tracking-[0.3em] uppercase text-text-muted mb-6 md:mb-10"
         >
-          <span>Trusted by brands backed by</span>
+          <span>GROWTH PARTNER TO BRANDS BACKED BY</span>
           <img src="/meta_logo.png" alt="Meta" className="h-3 md:h-8 w-auto object-contain opacity-60 grayscale dark:brightness-0 dark:invert hover:opacity-100 hover:grayscale-0 hover:dark:brightness-100 hover:dark:invert-0 transition-all duration-500 md:-mx-4 -mx-2" />
           <span>and</span>
           <img src="/shark_tank_logo.png" alt="Shark Tank" className="h-5 md:h-8 w-auto object-contain opacity-60 grayscale dark:brightness-0 dark:invert hover:opacity-100 hover:grayscale-0 hover:dark:brightness-100 hover:dark:invert-0 transition-all duration-500" />
@@ -72,12 +73,12 @@ function HeroSection() {
             {line2}
           </motion.span>
         </h1>
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 md:gap-16">
+        <div className="flex flex-col items-start gap-8 md:gap-10">
           <motion.p
             initial={{ opacity: 0, filter: 'blur(24px)', y: 30 }}
             animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
             transition={{ duration: 1.6, delay: 1.4, ease: slowEase }}
-            className="font-lato text-sm md:text-base text-text-secondary leading-[1.85] max-w-lg"
+            className="font-lato text-sm md:text-base text-text-secondary leading-[1.85] max-w-xl"
           >
             {heroContent.description}
           </motion.p>
@@ -85,14 +86,14 @@ function HeroSection() {
             initial={{ opacity: 0, filter: 'blur(20px)', y: 20 }}
             animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
             transition={{ duration: 1.6, delay: 1.7, ease: slowEase }}
-            className="flex flex-col items-start gap-4"
+            className="flex flex-wrap items-center gap-6 md:gap-10"
           >
             <MagneticButton strength={0.4}>
-              <a href="/contact.html" className="group flex items-center gap-4">
+              <a href="https://calendar.app.google/SU1NfUdT8yYEVbVe7" className="group flex items-center gap-4">
                 <span className="w-12 h-12 rounded-full bg-ink flex items-center justify-center group-hover:bg-signal transition-colors duration-[1200ms]">
                   <motion.span animate={{ x: [0, 3, 0] }} transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }} className="text-paper text-sm">→</motion.span>
                 </span>
-                <span className="font-lato text-sm font-medium text-ink md:inline">{heroContent.primaryCTA.label}</span>
+                <span className="font-lato text-sm font-medium text-ink">{heroContent.primaryCTA.label}</span>
               </a>
             </MagneticButton>
             <MagneticButton strength={0.3}>
@@ -119,36 +120,38 @@ function TrustBar() {
     <section className="relative py-10 md:py-14 border-y border-border/80 overflow-hidden">
       <div className="max-w-[1400px] mx-auto px-6 md:px-16 mb-10">
         <RevealText>
-          <p className="font-lato text-[11px] tracking-[0.3em] uppercase text-text-muted text-center md:text-left">{trustLabel}</p>
+          <p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal text-center md:text-left">Retained by leading brands.</p>
         </RevealText>
       </div>
-      <div className="relative w-full overflow-hidden px-6 md:px-16">
-        {/* Left fade-out overlay */}
-        <div
-          className="absolute left-0 top-0 bottom-0 w-16 md:w-32 z-10 pointer-events-none"
-          style={{
-            background: 'linear-gradient(90deg, var(--color-paper) 0%, transparent 100%)',
-          }}
-        />
-        {/* Right fade-out overlay */}
-        <div
-          className="absolute right-0 top-0 bottom-0 w-16 md:w-32 z-10 pointer-events-none"
-          style={{
-            background: 'linear-gradient(-90deg, var(--color-paper) 0%, transparent 100%)',
-          }}
-        />
+      <div className="max-w-[1400px] mx-auto px-6 md:px-16 relative">
+        <div className="relative w-full overflow-hidden">
+          {/* Left fade-out overlay */}
+          <div
+            className="absolute left-0 top-0 bottom-0 w-16 md:w-32 z-10 pointer-events-none"
+            style={{
+              background: 'linear-gradient(90deg, var(--color-paper) 0%, transparent 100%)',
+            }}
+          />
+          {/* Right fade-out overlay */}
+          <div
+            className="absolute right-0 top-0 bottom-0 w-16 md:w-32 z-10 pointer-events-none"
+            style={{
+              background: 'linear-gradient(-90deg, var(--color-paper) 0%, transparent 100%)',
+            }}
+          />
 
-        <motion.div
-          className="flex gap-16 md:gap-24 items-center"
-          animate={{ x: ['0%', '-50%'] }}
-          transition={{ duration: 35, ease: 'linear', repeat: Infinity }}
-        >
-          {logos.map((logo, i) => (
-            <div key={`${logo.alt}-${i}`} className="flex items-center flex-shrink-0">
-              <img src={logo.src} alt={logo.alt} className="h-8 md:h-12 w-auto object-contain opacity-50 grayscale dark:brightness-0 dark:invert hover:opacity-100 hover:grayscale-0 hover:dark:brightness-100 hover:dark:invert-0 transition-all duration-500" />
-            </div>
-          ))}
-        </motion.div>
+          <motion.div
+            className="flex gap-16 md:gap-24 items-center"
+            animate={{ x: ['0%', '-50%'] }}
+            transition={{ duration: 35, ease: 'linear', repeat: Infinity }}
+          >
+            {logos.map((logo, i) => (
+              <div key={`${logo.alt}-${i}`} className="flex items-center flex-shrink-0">
+                <img src={logo.src} alt={logo.alt} className="h-8 md:h-12 w-auto object-contain opacity-50 grayscale dark:brightness-0 dark:invert hover:opacity-100 hover:grayscale-0 hover:dark:brightness-100 hover:dark:invert-0 transition-all duration-500" />
+              </div>
+            ))}
+          </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -165,7 +168,7 @@ function WhyChooseUs() {
           </div>
           <div className="md:col-span-5 md:col-start-7 flex items-end">
             <RevealText delay={0.2}>
-              <p className="font-lato text-base text-text-secondary leading-[1.85]">We built this consultancy to focus purely on measurable outcomes. Our mission is to align strategic growth planning with high-converting execution, replacing speculation with performance.</p>
+              <p className="font-lato text-base text-text-secondary leading-[1.85]">We built Zesh to focus purely on measurable outcomes. Our mission is to align strategic growth planning with high-converting execution, replacing speculation with performance.</p>
             </RevealText>
           </div>
         </div>
@@ -222,7 +225,7 @@ function SolutionsGrid() {
                     <p className="font-lato text-sm md:text-base text-text-muted leading-[1.8]">&ldquo;{diagnoses[i]}&rdquo;</p>
                   </div>
                   <div className="md:col-span-6 md:col-start-7">
-                    <p className="font-lato text-[10px] tracking-[0.2em] uppercase text-signal mb-2">Prescription</p>
+                    {/* <p className="font-lato text-[10px] tracking-[0.2em] uppercase text-signal mb-2">Prescription</p> */}
                     <span className="font-lato text-[10px] tracking-[0.15em] uppercase text-signal mb-1 block">{s.shortTitle}</span>
                     <h3 className="font-syne text-2xl md:text-3xl font-800 tracking-tight mb-3 group-hover:text-signal transition-colors duration-[1200ms]">{s.title}</h3>
                     <p className="font-lato text-sm text-text-secondary leading-[1.8] mb-3">{s.tagline}</p>
@@ -251,107 +254,343 @@ function SolutionsGrid() {
   );
 }
 
-function Metrics() {
+function HowWeWork() {
+  const slowEaseLocal = [0.22, 1, 0.36, 1] as [number, number, number, number];
   return (
-    <section className="relative py-32 md:py-48 border-t border-border">
+    <section className="py-32 md:py-48 border-t border-border">
       <div className="max-w-[1400px] mx-auto px-6 md:px-16">
-        <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">THE METRICS</p></RevealText>
-        <RevealText delay={0.1}>
-          <h2 className="font-syne text-3xl md:text-5xl font-800 tracking-[-0.03em] max-w-3xl mb-32 md:mb-28">
-            Partnering with ambitious brands who demand proven expertise, predictable systems, and real business results<span className="text-signal">.</span>
-          </h2>
-        </RevealText>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-x-12 md:gap-y-16">
-          {stats.map((stat, i) => (
-            <RevealText key={stat.label} delay={i * 0.10}>
-              <motion.div whileHover={{ y: -3 }} transition={{ duration: 1, ease: slowEase }}>
-                <span className="font-lato text-5xl md:text-6xl lg:text-7xl font-700 tracking-tight text-ink block leading-none">{stat.value}</span>
-                <p className="font-lato text-[11px] tracking-[0.2em] uppercase text-text-muted mt-5 max-w-xs leading-relaxed">{stat.label}</p>
-              </motion.div>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-14 md:gap-20">
+          <div className="md:col-span-5 md:sticky md:top-40 md:self-start">
+            <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">PRINCIPLES</p></RevealText>
+            <RevealText delay={0.1}><h2 className="font-syne text-5xl md:text-6xl font-800 tracking-[-0.03em] mb-6">How we work<span className="text-signal">.</span></h2></RevealText>
+            <RevealText delay={0.2}>
+              <p className="font-lato text-sm md:text-base text-text-secondary leading-[1.85] mb-10 max-w-sm">
+                We don't use account managers or sales layers. When you partner with Zesh, senior engineers and strategists work directly on your growth systems — with full transparency on every action and outcome.
+              </p>
             </RevealText>
-          ))}
+            <RevealText delay={0.3}>
+              <div className="flex flex-col gap-4">
+                <a
+                  href="https://calendar.app.google/SU1NfUdT8yYEVbVe7"
+                  className="group flex items-center gap-4"
+                >
+                  <span className="w-10 h-10 rounded-full bg-ink flex items-center justify-center group-hover:bg-signal transition-colors duration-[800ms] flex-shrink-0">
+                    <motion.span
+                      animate={{ x: [0, 3, 0] }}
+                      transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                      className="text-paper text-sm"
+                    >
+                      →
+                    </motion.span>
+                  </span>
+                  <span className="font-lato text-sm font-medium text-ink group-hover:text-signal transition-colors duration-500">
+                    Schedule Discovery Call
+                  </span>
+                </a>
+                <a
+                  href="/case-studies.html"
+                  className="font-lato text-sm text-text-muted hover:text-ink transition-colors duration-700 sig-hover pl-14"
+                >
+                  View Case Studies
+                </a>
+              </div>
+            </RevealText>
+          </div>
+          <div className="md:col-span-5 md:col-start-8">
+            {values.map((v, i) => (
+              <RevealText key={v.title} delay={0.3 + i * 0.12} duration={1.6}>
+                <motion.div whileHover={{ x: 4 }} transition={{ duration: 1, ease: slowEaseLocal }} className="group py-8 border-b border-border">
+                  <h4 className="font-syne text-xl md:text-2xl font-800 mb-2 group-hover:text-signal transition-colors duration-[1200ms]">{v.title}</h4>
+                  <p className="font-lato text-sm text-text-secondary leading-[1.8]">{v.description}</p>
+                </motion.div>
+              </RevealText>
+            ))}
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
+function Metrics() {
+  return (
+    <section className="relative py-32 md:py-48 border-t border-border overflow-hidden">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-signal/5 blur-[120px] rounded-full pointer-events-none" />
+
+      <div className="max-w-[1400px] mx-auto px-6 md:px-16 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-8 items-center">
+
+          <div className="lg:col-span-5">
+            <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">THE METRICS</p></RevealText>
+            <RevealText delay={0.1}>
+              <h2 className="font-syne text-4xl md:text-5xl font-800 tracking-[-0.03em] leading-[1.1] mb-6">
+                Partnering with ambitious brands who demand proven expertise, predictable systems, and real business results<span className="text-signal">.</span>
+              </h2>
+            </RevealText>
+            <RevealText delay={0.2}>
+              <p className="font-lato text-base text-text-secondary leading-[1.85] max-w-lg mb-10 lg:mb-0">
+                We design high-converting growth architecture that turns your website into a measurable enterprise asset. Performance, scaled and secured.
+              </p>
+            </RevealText>
+          </div>
+
+          <div className="lg:col-span-6 lg:col-start-7">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {stats.map((stat, i) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.8, delay: i * 0.15, ease: slowEase }}
+                  whileHover={{ y: -5 }}
+                  className="bg-paper/50 dark:bg-ink/5 border border-border/50 backdrop-blur-sm p-8 md:p-10 rounded-2xl flex flex-col justify-between group relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-signal/10 rounded-full blur-[40px] -translate-y-1/2 translate-x-1/2 group-hover:bg-signal/30 transition-colors duration-700" />
+
+                  {/* Graphical Representation of Trend */}
+                  <div className="w-16 h-14 mb-8 flex items-end justify-between relative z-10 opacity-90 group-hover:opacity-100 transition-opacity duration-300">
+                    {/* Increasing Bars */}
+                    <motion.div initial={{ height: 0 }} whileInView={{ height: "40%" }} viewport={{ once: true }} transition={{ delay: 0.2, duration: 0.8, ease: "easeOut" }} className="w-2.5 bg-signal/30 rounded-t-sm" />
+                    <motion.div initial={{ height: 0 }} whileInView={{ height: "60%" }} viewport={{ once: true }} transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }} className="w-2.5 bg-signal/60 rounded-t-sm" />
+                    <motion.div initial={{ height: 0 }} whileInView={{ height: "80%" }} viewport={{ once: true }} transition={{ delay: 0.4, duration: 0.8, ease: "easeOut" }} className="w-2.5 bg-signal/90 rounded-t-sm" />
+                    <motion.div initial={{ height: 0 }} whileInView={{ height: "100%" }} viewport={{ once: true }} transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }} className="w-2.5 bg-signal rounded-t-sm" />
+
+                    {/* Overlay Trend Arrow matching the image */}
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none drop-shadow-md" viewBox="0 0 64 56">
+                      <motion.path
+                        initial={{ pathLength: 0 }}
+                        whileInView={{ pathLength: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.6, duration: 1, ease: "easeInOut" }}
+                        d="M 4 36 L 22 18 L 36 30 L 60 6"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        className="text-ink dark:text-white"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <motion.path
+                        initial={{ opacity: 0 }}
+                        whileInView={{ opacity: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 1.4 }}
+                        d="M 48 6 H 60 V 18"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        className="text-ink dark:text-white"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
+
+                  <h3 className="font-syne text-5xl md:text-6xl font-800 tracking-tight text-ink mb-6 relative z-10">{stat.value}</h3>
+                  <div className="w-8 h-[2px] bg-signal mb-6 relative z-10" />
+                  <p className="font-lato text-[11px] tracking-[0.2em] uppercase text-text-muted leading-relaxed relative z-10 pr-4">
+                    {stat.label}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const comparisonRows = [
+  { capability: 'Work as an Extended Team', inHouse: { text: 'No', type: 'no' }, other: { text: 'Yes', type: 'yes' }, zesh: { text: 'Yes', type: 'yes' } },
+  { capability: 'Industry Specialists', inHouse: { text: 'Limited', type: 'neutral' }, other: { text: 'Generalist Approach', type: 'neutral' }, zesh: { text: 'Specialized SaaS Focus', type: 'highlight' } },
+  { capability: 'Cost Effective', inHouse: { text: 'No', type: 'no' }, other: { text: 'Partial', type: 'neutral' }, zesh: { text: 'Yes', type: 'yes' } },
+  { capability: 'Agility & Fast Execution', inHouse: { text: 'No', type: 'no' }, other: { text: 'Maybe', type: 'neutral' }, zesh: { text: 'Yes', type: 'yes' } },
+  { capability: 'Scalability', inHouse: { text: 'Challenging', type: 'neutral' }, other: { text: 'Restricted', type: 'neutral' }, zesh: { text: 'Highly Flexible', type: 'highlight' } },
+  { capability: 'Transparency & Reporting', inHouse: { text: 'Basic', type: 'neutral' }, other: { text: 'Minimal', type: 'neutral' }, zesh: { text: 'Comprehensive', type: 'highlight' } },
+  { capability: 'Technology & Tool Access', inHouse: { text: 'Additional Cost', type: 'neutral' }, other: { text: 'Limited', type: 'neutral' }, zesh: { text: 'Fully Integrated', type: 'highlight' } },
+  { capability: 'Performance Optimization', inHouse: { text: 'Manual', type: 'neutral' }, other: { text: 'Basic', type: 'neutral' }, zesh: { text: 'Data-Driven & Advanced', type: 'highlight' } },
+  { capability: 'Predictive Analytics', inHouse: { text: 'No', type: 'no' }, other: { text: 'No', type: 'no' }, zesh: { text: 'AI-Powered Insights', type: 'highlight' } },
+  { capability: 'Continuous Campaign Learning', inHouse: { text: 'No', type: 'no' }, other: { text: 'No', type: 'no' }, zesh: { text: 'AI-Led Optimization', type: 'highlight' } },
+];
+
+type CellType = 'yes' | 'no' | 'neutral' | 'highlight';
+
+function ComparisonCell({ text, type }: { text: string; type: CellType }) {
+  if (type === 'yes') {
+    return (
+      <div className="flex items-center justify-center gap-1.5 font-lato text-sm text-text-secondary">
+        {text} <span className="text-green-500 font-bold">✓</span>
+      </div>
+    );
+  }
+  if (type === 'no') {
+    return (
+      <div className="flex items-center justify-center gap-1.5 font-lato text-sm text-text-secondary">
+        {text} <span className="text-red-500 font-bold">✗</span>
+      </div>
+    );
+  }
+  if (type === 'highlight') {
+    return (
+      <div className="font-lato text-sm text-white text-center font-medium leading-snug">
+        {text}
+      </div>
+    );
+  }
+  return <div className="font-lato text-sm text-text-secondary text-center">{text}</div>;
+}
+
+function ComparisonTable() {
+  return (
+    <section className="relative py-32 md:py-48 border-t border-border overflow-hidden">
+      {/* Background glow */}
+      <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[500px] h-[500px] bg-signal/[0.04] blur-[180px] rounded-full pointer-events-none" />
+
+      <div className="max-w-[1400px] mx-auto px-6 md:px-16 relative z-10">
+        {/* Section Header */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-20 md:mb-24">
+          <div className="md:col-span-6">
+            <RevealText>
+              <p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">THE ADVANTAGE</p>
+            </RevealText>
+            <RevealText delay={0.1}>
+              <h2 className="font-syne text-4xl md:text-6xl font-800 tracking-[-0.03em] leading-tight">
+                Why brands choose Zesh over the alternatives<span className="text-signal">.</span>
+              </h2>
+            </RevealText>
+          </div>
+          <div className="md:col-span-5 md:col-start-8 flex items-end">
+            <RevealText delay={0.2}>
+              <p className="font-lato text-base text-text-secondary leading-[1.85]">
+                Not every agency delivers the same depth of expertise, speed, or strategic alignment. Here's how we compare — transparently.
+              </p>
+            </RevealText>
+          </div>
+        </div>
+
+        {/* Comparison Table */}
+        <RevealText delay={0.15} duration={1.4}>
+          <div className="w-full overflow-x-auto rounded-2xl border border-border/50">
+            <table className="w-full min-w-[700px] border-collapse">
+              {/* Table Header */}
+              <thead>
+                <tr>
+                  <th className="bg-paper/60 dark:bg-ink/10 backdrop-blur-sm text-left px-6 py-5 font-syne font-800 text-ink text-base tracking-tight border-b border-border/60 rounded-tl-2xl w-[32%]">
+                    Capability
+                  </th>
+                  <th className="bg-paper/60 dark:bg-ink/10 backdrop-blur-sm px-4 py-5 font-lato font-semibold text-ink text-sm text-center border-b border-border/60 border-l border-border/40 w-[20%]">
+                    In-House
+                  </th>
+                  <th className="bg-paper/60 dark:bg-ink/10 backdrop-blur-sm px-4 py-5 font-lato font-semibold text-ink text-sm text-center border-b border-border/60 border-l border-border/40 w-[20%]">
+                    Other Agencies
+                  </th>
+                  <th className="bg-signal/90 px-4 py-5 font-lato font-bold text-white text-sm text-center border-b border-signal/50 border-l border-signal/30 w-[22%] rounded-tr-2xl">
+                    Zesh Agency
+                  </th>
+                </tr>
+              </thead>
+
+              {/* Table Body */}
+              <tbody>
+                {comparisonRows.map((row, i) => (
+                  <motion.tr
+                    key={row.capability}
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true, margin: '-60px' }}
+                    transition={{ duration: 0.5, delay: i * 0.04, ease: slowEase }}
+                    className="group"
+                  >
+                    {/* Capability */}
+                    <td className={`px-6 py-5 font-lato text-sm text-ink border-b border-border/40 transition-colors duration-300 ${i % 2 === 0 ? 'bg-paper/30 dark:bg-ink/5' : 'bg-transparent'} group-hover:bg-signal/5`}>
+                      {row.capability}
+                    </td>
+
+                    {/* In-House */}
+                    <td className={`px-4 py-5 border-b border-border/40 border-l border-border/30 text-center transition-colors duration-300 ${i % 2 === 0 ? 'bg-paper/30 dark:bg-ink/5' : 'bg-transparent'} group-hover:bg-signal/5`}>
+                      <ComparisonCell text={row.inHouse.text} type={row.inHouse.type as CellType} />
+                    </td>
+
+                    {/* Other Agencies */}
+                    <td className={`px-4 py-5 border-b border-border/40 border-l border-border/30 text-center transition-colors duration-300 ${i % 2 === 0 ? 'bg-paper/30 dark:bg-ink/5' : 'bg-transparent'} group-hover:bg-signal/5`}>
+                      <ComparisonCell text={row.other.text} type={row.other.type as CellType} />
+                    </td>
+
+                    {/* Zesh Column — always highlighted */}
+                    <td className={`px-4 py-5 border-b border-signal/20 border-l border-signal/20 text-center transition-colors duration-300 ${i % 2 === 0 ? 'bg-signal/80' : 'bg-signal/70'} group-hover:bg-signal/90 ${i === comparisonRows.length - 1 ? 'rounded-br-2xl' : ''}`}>
+                      <ComparisonCell text={row.zesh.text} type={row.zesh.type as CellType} />
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </RevealText>
+
+        {/* Bottom CTA */}
+        <RevealText delay={0.4}>
+          <div className="mt-12 flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-10">
+            <a
+              href="https://calendar.app.google/SU1NfUdT8yYEVbVe7"
+              className="font-lato text-sm font-medium text-signal sig-hover flex items-center gap-2 group"
+            >
+              <span className="w-8 h-8 rounded-full bg-signal/15 flex items-center justify-center group-hover:bg-signal/30 transition-colors duration-500">
+                <motion.span animate={{ x: [0, 3, 0] }} transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }} className="text-signal text-xs">→</motion.span>
+              </span>
+              Book a Free Consultation
+            </a>
+            <a href="/solutions.html" className="font-lato text-sm text-text-muted hover:text-ink transition-colors duration-700 sig-hover">
+              Explore All Solutions
+            </a>
+          </div>
+        </RevealText>
+      </div>
+    </section>
+  );
+}
+
 function FeaturedCaseStudy() {
-  const cs = caseStudies[0];
-  if (!cs) return null;
-
-  // Custom KPI data mapping from cs.results dynamically to avoid editing data files
-  const kpis = cs.results.slice(0, 4).map((resStr, index) => {
-    let title = 'METRIC';
-    let cy = '';
-    let py = '';
-    let trend = '';
-    let svgId = '';
-    let mainPath = '';
-    let thinPath = '';
-
-    if (index === 0) {
-      title = 'TRAFFIC';
-      cy = '+312%';
-      py = '83.1K';
-      trend = '20.36%';
-      svgId = 'spark-traffic';
-      mainPath = 'M 0 65 Q 40 35 70 40 T 150 78 Q 230 46 270 42 T 350 25 T 400 68';
-      thinPath = 'M 0 75 Q 85 85 105 72 T 260 70 T 370 45 T 400 35';
-    } else if (index === 1) {
-      title = 'REVENUE';
-      cy = '$1.2M';
-      py = '$0.35M';
-      trend = '14.24%';
-      svgId = 'spark-revenue';
-      mainPath = 'M 0 60 Q 30 65 50 34 T 120 106 Q 160 50 210 56 T 290 35 T 350 55 T 400 40';
-      thinPath = 'M 0 60 Q 60 70 120 60 T 240 50 T 360 55 T 400 48';
-    } else if (index === 2) {
-      title = 'RANKINGS';
-      cy = 'Top 3';
-      py = 'Page 4';
-      trend = '28.02%';
-      svgId: 'spark-rankings';
-      svgId = 'spark-rankings';
-      mainPath = 'M 0 80 Q 40 82 85 70 T 170 80 Q 230 76 270 20 T 345 35 T 400 75';
-      thinPath = 'M 0 80 Q 80 82 160 76 T 320 70 T 400 50';
-    } else {
-      title = 'COST/ACQUISITION';
-      cy = '-65%';
-      py = '$42.05';
-      trend = '46.70%';
-      svgId = 'spark-cac';
-      mainPath = 'M 0 90 Q 60 70 110 82 T 230 70 T 310 20 T 365 55 T 400 85';
-      thinPath = 'M 0 90 Q 100 85 200 88 T 350 60 T 400 70';
+  const cards = [
+    {
+      slug: 'b2b-saas-pipeline-expansion',
+      title: 'How We Drove a 312% Inbound Pipeline Expansion for an Enterprise B2B SaaS Platform',
+      mainMetric: '312%',
+      stats: [
+        { value: '+312%', label: 'Traffic' },
+        { value: '$1.2M', label: 'Pipeline' },
+        { value: '90 Days', label: 'Duration' }
+      ]
+    },
+    {
+      slug: 'multi-location-healthcare',
+      title: 'How We Achieved #1 Map Pack Dominance Across a Metro Area for 12 Clinical Facilities',
+      mainMetric: '#1',
+      stats: [
+        { value: '+280%', label: 'Bookings' },
+        { value: '1,400+', label: 'Reviews' },
+        { value: '90 Days', label: 'Duration' }
+      ]
+    },
+    {
+      slug: 'architecture-studio-project-inquiries',
+      title: 'How We Doubled High-Budget Commissions and Inquiries for an Architecture Studio',
+      mainMetric: '180%',
+      stats: [
+        { value: '+180%', label: 'Inquiries' },
+        { value: '+320%', label: 'Impressions' },
+        { value: '8 Weeks', label: 'Duration' }
+      ]
     }
-
-    // Dynamically derive value prefix from real cs.results data
-    const words = resStr.split(' ');
-    if (words[0] && (words[0].includes('%') || words[0].includes('$') || words[0].toLowerCase().includes('top') || words[0].includes('-') || /\d/.test(words[0]))) {
-      cy = words[0];
-    } else if (index === 3) {
-      cy = '-65%'; // Fallback for CAC reduction
-    }
-
-    return {
-      title,
-      cy,
-      py,
-      trend,
-      svgId,
-      mainPath,
-      thinPath,
-      label: resStr,
-    };
-  });
-
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  ];
 
   return (
     <section className="relative py-32 md:py-48 border-t border-border">
       <div className="max-w-[1400px] mx-auto px-6 md:px-16">
         {/* Header Block */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-28 md:mb-24">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-20 md:mb-24">
           <div className="md:col-span-6">
             <RevealText><p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">PROOF</p></RevealText>
             <RevealText delay={0.1}>
@@ -362,152 +601,65 @@ function FeaturedCaseStudy() {
           </div>
         </div>
 
-        {/* ── Two-Column Main Layout ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-
-          {/* LEFT COLUMN: Performance Block */}
-          <div className="lg:col-span-5 flex flex-col justify-between h-full bg-surface/20 border border-border/40 rounded-2xl p-8 relative overflow-hidden backdrop-blur-2xl">
-            {/* Top linear visual shine */}
-            <div className="absolute inset-x-0 top-0 h-px bg-white/20" />
-
-            <div>
-              {/* Meta details */}
-              <div className="pb-6 border-b border-border/30">
-                <span className="font-lato text-[9px] tracking-[0.2em] uppercase px-2.5 py-1 rounded bg-signal/10 text-signal border border-signal/20 inline-block mb-4">
-                  {cs.industry}
-                </span>
-
-                <h3 className="font-syne text-[22px] font-800 text-ink leading-tight mb-2">
-                  {cs.client}
-                </h3>
-                <p className="font-lato text-[13px] text-text-secondary leading-relaxed">
-                  {cs.overview}
-                </p>
-              </div>
-
-              {/* Challenge & Solution blocks with improved hierarchy */}
-              <div className="py-6 space-y-6">
+        {/* 3-Column Case Study Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+          {cards.map((card, i) => (
+            <RevealText key={card.slug} delay={i * 0.12} duration={1.6}>
+              <motion.a
+                href={`/case-studies.html?slug=${card.slug}`}
+                whileHover={{ y: -6 }}
+                transition={{ duration: 0.5, ease: slowEase }}
+                className="group flex flex-col justify-between h-full bg-[#0E0F10] border border-[#1C1D1F] rounded-3xl p-8 md:p-10 transition-all duration-[600ms] cursor-pointer"
+              >
                 <div>
-                  <p className="font-lato text-[10px] tracking-[0.16em] uppercase text-signal/90 font-semibold mb-2">The Challenge</p>
-                  <p className="font-lato text-[13px] text-text-muted leading-relaxed">
-                    {cs.challenge}
-                  </p>
+                  {/* Category / Label */}
+                  <span className="font-lato text-[10px] tracking-[0.16em] uppercase text-[#71717A] font-bold block mb-4">
+                    CASE STUDY
+                  </span>
+                  {/* Title */}
+                  <h3 className="font-syne text-lg md:text-xl font-700 text-white tracking-tight leading-snug mb-8 group-hover:text-signal transition-colors duration-500">
+                    {card.title}
+                  </h3>
                 </div>
 
                 <div>
-                  <p className="font-lato text-[10px] tracking-[0.16em] uppercase text-ink/70 font-semibold mb-2">The Solution Systems</p>
-                  <p className="font-lato text-[13px] text-text-secondary leading-relaxed">
-                    {cs.solution}
-                  </p>
-                </div>
-              </div>
-
-              {/* Services tags */}
-              <div className="flex flex-wrap gap-2 pt-2 pb-6 border-b border-border/30">
-                {cs.services.map((service) => (
-                  <span key={service} className="font-lato text-[10px] tracking-[0.1em] uppercase bg-ink/5 dark:bg-white/5 text-ink/60 px-3 py-1 rounded-md">
-                    {service}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="pt-6">
-              <RevealText delay={0.3}>
-                <a href={`/case-studies.html?slug=${cs.slug}`} className="group inline-flex items-center gap-2">
-                  <span className="font-lato text-sm font-semibold text-signal group-hover:text-ink transition-colors duration-300">
-                    Read the Case Study
-                  </span>
-                  <span className="text-signal group-hover:translate-x-1 transition-transform duration-300">
-                    →
-                  </span>
-                </a>
-              </RevealText>
-            </div>
-          </div>
-
-          {/* RIGHT COLUMN: KPI Dashboard Widgets styled EXACTLY like the design reference */}
-          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6 bg-[#0c0d0f] rounded-3xl p-6 border border-[#1e1f22]">
-            {kpis.map((kpi, i) => (
-              <RevealText key={kpi.title} delay={0.1 + i * 0.08}>
-                <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ duration: 0.3 }}
-                  className="bg-[#121315] border border-[#1d1f22] rounded-2xl p-5 select-none relative overflow-hidden text-left"
-                >
-                  {/* KPI Title */}
-                  <h4 className="font-lato text-[11px] font-bold tracking-widest text-[#a1a1aa] mb-2 uppercase">
-                    {kpi.title}
-                  </h4>
-
-                  {/* CY | PY subtitle */}
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-lato text-xs font-bold text-[#8cda28]">
-                      CY {kpi.cy}
+                  {/* Big Metric + Arrow row */}
+                  <div className="flex items-center justify-between pointer-events-none mb-8">
+                    <span className="text-5xl md:text-6xl font-extrabold font-inter tracking-tight text-signal leading-none">
+                      {card.mainMetric}
                     </span>
-                    <span className="text-white/20 text-xs">|</span>
-                    <span className="font-lato text-xs text-white/50">
-                      PY {kpi.py}
-                    </span>
-                  </div>
-
-                  {/* Trend indicator row */}
-                  <div className="flex items-center gap-1.5 mb-5">
-                    <span className="text-[#8cda28] text-xs">▲</span>
-                    <span className="font-lato text-xs font-bold text-[#8cda28]">
-                      {kpi.trend}
-                    </span>
-                  </div>
-
-                  {/* Chart and Month axes */}
-                  <div className="relative h-20 w-full mt-4">
-                    <svg className="w-full h-full text-[#8cda28]" viewBox="0 0 400 120" fill="none" preserveAspectRatio="none">
-                      <defs>
-                        <linearGradient id={`grad-${kpi.svgId}`} x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#8cda28" stopOpacity="0.4" />
-                          <stop offset="100%" stopColor="#8cda28" stopOpacity="0" />
-                        </linearGradient>
-                      </defs>
-
-                      {/* Shaded Area underneath curve */}
-                      <path
-                        d={`${kpi.mainPath} L 400 120 L 0 120 Z`}
-                        fill={`url(#grad-${kpi.svgId})`}
-                      />
-
-                      {/* Thin helper line */}
-                      <path
-                        d={kpi.thinPath}
-                        stroke="#8cda28"
-                        strokeWidth="1.2"
-                        strokeOpacity="0.4"
-                        strokeLinecap="round"
-                      />
-
-                      {/* Main Stroke line curve */}
-                      <path
-                        d={kpi.mainPath}
-                        stroke="#8cda28"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                      />
+                    <svg
+                      className="w-10 h-10 text-signal/80 group-hover:text-signal group-hover:translate-x-1 group-hover:-translate-y-1 transition-all duration-500"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
                     </svg>
                   </div>
 
-                  {/* Horizontal months labels list */}
-                  <div className="flex justify-between mt-3 px-1 border-t border-[#1d1f22]/50 pt-2.5">
-                    {months.map((m) => (
-                      <span key={m} className="text-[9px] text-[#52525b] font-lato">
-                        {m}
-                      </span>
+                  {/* Divider line */}
+                  <div className="h-px bg-[#27272A] w-full mb-6" />
+
+                  {/* 3 Stats columns */}
+                  <div className="grid grid-cols-3 gap-2">
+                    {card.stats.map((stat, statIdx) => (
+                      <div key={statIdx} className="flex flex-col text-left">
+                        <span className="font-inter text-[15px] font-bold text-white leading-none mb-1.5">
+                          {stat.value}
+                        </span>
+                        <span className="font-lato text-[9px] uppercase tracking-wider text-[#71717A]">
+                          {stat.label}
+                        </span>
+                      </div>
                     ))}
                   </div>
-
-                </motion.div>
-              </RevealText>
-            ))}
-          </div>
-
+                </div>
+              </motion.a>
+            </RevealText>
+          ))}
         </div>
 
         <RevealText delay={0.4}>
@@ -592,6 +744,174 @@ function CTA() {
   );
 }
 
+function BlogSection() {
+  const latestPosts = blogPosts.slice(0, 3);
+  return (
+    <section className="relative py-32 md:py-48 border-t border-border">
+      <div className="max-w-[1400px] mx-auto px-6 md:px-16">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-20 md:mb-24">
+          <div className="md:col-span-6">
+            <RevealText>
+              <p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">INSIGHTS</p>
+            </RevealText>
+            <RevealText delay={0.1}>
+              <h2 className="font-syne text-4xl md:text-6xl font-800 tracking-[-0.03em] leading-tight">
+                Latest thinking from our team<span className="text-signal">.</span>
+              </h2>
+            </RevealText>
+          </div>
+          <div className="md:col-span-5 md:col-start-8 flex items-end">
+            <RevealText delay={0.2}>
+              <p className="font-lato text-base text-text-secondary leading-[1.85]">
+                Perspectives on growth strategy, performance marketing, and the technical systems that drive enterprise acquisition.
+              </p>
+            </RevealText>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {latestPosts.map((post, i) => (
+            <RevealText key={post.slug} delay={i * 0.08} duration={1.4}>
+              <a href={`/blog.html?slug=${post.slug}`} className="group block h-full">
+                <motion.div
+                  whileHover={{ y: -5 }}
+                  transition={{ duration: 0.7, ease: slowEase }}
+                  className="border border-border/40 hover:border-signal/30 rounded-xl overflow-hidden transition-all duration-700 bg-paper/30 dark:bg-ink/5 h-full flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="overflow-hidden aspect-video">
+                      <img
+                        src={post.image}
+                        alt={post.title}
+                        loading="lazy"
+                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 scale-100 group-hover:scale-105 transition-all duration-[1200ms]"
+                      />
+                    </div>
+                    <div className="p-6">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="font-lato text-[9px] tracking-[0.2em] uppercase text-signal">{post.category}</span>
+                        <span className="w-1 h-1 rounded-full bg-border" />
+                        <span className="font-lato text-[10px] text-text-muted">{post.date}</span>
+                        <span className="w-1 h-1 rounded-full bg-border" />
+                        <span className="font-lato text-[10px] text-text-muted">{post.readTime} read</span>
+                      </div>
+                      <h4 className="font-syne text-lg font-800 tracking-tight group-hover:text-signal transition-colors duration-700 leading-snug mb-2">
+                        {post.title}
+                      </h4>
+                      <p className="font-lato text-xs text-text-muted leading-relaxed line-clamp-2">{post.excerpt}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              </a>
+            </RevealText>
+          ))}
+        </div>
+
+        <RevealText delay={0.4}>
+          <div className="mt-16 md:mt-20 flex justify-start">
+            <a href="/blog.html" className="font-lato text-sm font-medium text-signal sig-hover">View All Insights →</a>
+          </div>
+        </RevealText>
+      </div>
+    </section>
+  );
+}
+
+const faqData = [
+  {
+    question: "What is the difference between SEO, AEO, and GEO?",
+    answer: "SEO (Search Engine Optimization) targets keyword match rankings on traditional search engines. AEO (Answer Engine Optimization) ensures your brand is indexed and cited by conversational assistants (ChatGPT, Claude). GEO (Generative Engine Optimization) adapts website source data/structures so generative engines (Perplexity, Gemini RAG pipelines) confidently retrieve and recommend your domain."
+  },
+  {
+    question: "How long does it take to see organic visibility improvements?",
+    answer: "For technical upgrades and indexation fixes, we typically see crawl improvement and initial index health upgrades within 72 hours. Semantic graph integration and new keywords rank within 4 to 8 weeks, while enterprise authority building compounds over 3 to 6 months."
+  },
+  {
+    question: "Do you work with in-house marketing execution teams?",
+    answer: "Yes. We regularly partner with in-house product and marketing operators. We act as their specialized technical arm, delivering schema validation, retrieval content engineering, and programmatic page building, while providing ongoing reporting and blueprints they can run with."
+  },
+  {
+    question: "What is your pricing structure and commitment?",
+    answer: "We focus on outcome-oriented retainer models and quarterly sprints. After our initial discovery workshop, we build a customized 90-day execution blueprint with direct deliverables and milestones, allowing you full flexibility without locked annual contracts."
+  },
+  {
+    question: "Can Zesh help integrate tracking with my CRM?",
+    answer: "Absolutely. We build clean API connections that route and score inbound leads from multi-step forms directly into systems like HubSpot, Salesforce, or Marketo, including full closed-loop revenue attribution."
+  }
+];
+
+function FAQSection() {
+  const [activeFaq, setActiveFaq] = useState<number | null>(0);
+
+  return (
+    <section className="py-32 md:py-48 border-t border-border">
+      <div className="max-w-[1400px] mx-auto px-6 md:px-16">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-14 md:gap-20">
+          {/* FAQ Header Column */}
+          <div className="md:col-span-5 md:sticky md:top-40 md:self-start">
+            <RevealText>
+              <p className="font-lato text-[11px] tracking-[0.3em] uppercase text-signal mb-4">FAQS</p>
+            </RevealText>
+            <RevealText delay={0.1}>
+              <h2 className="font-syne text-4xl md:text-5xl font-800 tracking-[-0.03em] leading-tight">
+                Frequently asked questions<span className="text-signal">.</span>
+              </h2>
+            </RevealText>
+          </div>
+
+          {/* Accordion List Column */}
+          <div className="md:col-span-7">
+            <div>
+              {faqData.map((faq, i) => {
+                const isActive = activeFaq === i;
+                return (
+                  <div key={i} className="border-b border-border">
+                    <button
+                      onClick={() => setActiveFaq(isActive ? null : i)}
+                      className="group w-full flex items-center justify-between gap-6 py-6 text-left cursor-pointer"
+                    >
+                      <span
+                        className={`font-syne text-base md:text-lg font-bold transition-colors duration-500 ${isActive ? 'text-signal' : 'text-ink dark:text-[#EDECE7] group-hover:text-signal'
+                          }`}
+                      >
+                        {faq.question}
+                      </span>
+                      <motion.span
+                        animate={{ rotate: isActive ? 45 : 0 }}
+                        transition={{ duration: 0.4, ease: slowEase }}
+                        className="text-signal text-xl leading-none flex-shrink-0 select-none"
+                      >
+                        +
+                      </motion.span>
+                    </button>
+
+                    <AnimatePresence initial={false}>
+                      {isActive && (
+                        <motion.div
+                          key="answer"
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.55, ease: slowEase }}
+                          className="overflow-hidden"
+                        >
+                          <p className="font-lato text-sm text-text-secondary leading-[1.85] pb-6 pr-4">
+                            {faq.answer}
+                          </p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function Home() {
   return (
     <PageTransition>
@@ -599,10 +919,14 @@ export default function Home() {
       <TrustBar />
       <WhyChooseUs />
       <SolutionsGrid />
+      <HowWeWork />
       <Metrics />
+      <ComparisonTable />
       <FeaturedCaseStudy />
       <IndustriesGrid />
       <Testimonials />
+      <BlogSection />
+      <FAQSection />
       <CTA />
     </PageTransition>
   );
